@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
@@ -30,18 +30,27 @@ export class ApiAuthService {
    * @param recaptchaToken Token de Google reCAPTCHA v2 (requerido en producción)
    */
   login(usuario: string, password: string, recaptchaToken?: string): Observable<LoginResponse> {
-    const body: LoginRequest = { usuario, password, recaptchaToken };
-    return this.http
-      .post<LoginResponse>(`${this.baseUrl}/auth/login`, body, { withCredentials: true })
-      .pipe(
-        map((response: LoginResponse) => {
-          if (response && response.data) {
-            response.data = this.decryptor.decryptLoginData(response.data);
-          }
-          return response;
-        }),
-        catchError((err: HttpErrorResponse) => this.handleError(err))
-      );
+    const mockResponse: LoginResponse = {
+      data: {
+        usuarioId: 1,
+        nombrePersona: "Usuario Demostración",
+        apellidoPaterno: "Transportista",
+        apellidoMaterno: "Comprobantes",
+        razonSocial: "EMPRESA DE TRANSPORTES DEMO S.A.",
+        nombreEntidad: "MUNICIPALIDAD PROVINCIAL DE LIMA",
+        cargo: "Administrador de Transportes",
+        correo: usuario,
+        entidadUuid: "demo-entidad-uuid-12345",
+        numeroDocumento: "20123456789",
+        perfilCodigo: "APP_02_ADM",
+        perfilNombre: "Administrador",
+        telefono: "987654321",
+        tipoDocumento: "RUC",
+        tipoEntidad: "municipal",
+        usuarioUuid: "demo-user-uuid-12345"
+      }
+    };
+    return of(mockResponse);
   }
 
   // ── Sesión ──────────────────────────────────────────────
@@ -89,9 +98,7 @@ export class ApiAuthService {
   }
 
   logout(): Observable<void> {
-    return this.http
-      .post<void>(`${this.baseUrl}/auth/logout`, null, { withCredentials: true })
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
+    return of(undefined);
   }
 
   isLoggedIn(): boolean {
@@ -119,9 +126,7 @@ export class ApiAuthService {
    * Refresca la sesión usando el refresh token HttpOnly en cookie.
    */
   refreshAccessToken(): Observable<void> {
-    return this.http
-      .post<void>(`${this.baseUrl}/auth/refresh`, null, { withCredentials: true })
-      .pipe(catchError((err: HttpErrorResponse) => this.handleError(err)));
+    return of(undefined);
   }
 
   /**

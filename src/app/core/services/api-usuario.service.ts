@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   UpdateEmailPhoneRequest,
@@ -19,15 +19,22 @@ export class ApiUsuarioService {
    * El Token es inyectado automáticamente por el AuthInterceptor en las cabeceras.
    */
   actualizarCorreoTelefono(payload: UpdateEmailPhoneRequest): Observable<UpdateEmailPhoneResponse> {
-    return this.http.put<UpdateEmailPhoneResponse>(`${this.API_URL}/usuario/actualizar/contacto`, payload
-    , { withCredentials: true });
+    return of({
+      data: {
+        respuesta: "OK",
+        mensaje: "Contacto actualizado correctamente (offline mock)"
+      },
+      mensaje: "Contacto actualizado correctamente (offline mock)"
+    });
   }
 
   /**
    * Actualiza la contraseña del usuario.
    */
   actualizarContrasena(payload: any): Observable<any> {
-    return this.http.put<any>(`${this.API_URL}/usuario/actualizar/contrasena`, payload
-    , { withCredentials: true });
+    return of({
+      respuesta: "OK",
+      mensaje: "Contraseña actualizada correctamente (offline mock)"
+    });
   }
 }
