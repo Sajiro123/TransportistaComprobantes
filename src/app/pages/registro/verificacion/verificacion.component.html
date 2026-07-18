@@ -1,0 +1,186 @@
+<div class="verificacion-page">
+
+  <!-- ══ STEPPER CUSTOM ════════════════════════════════════════ -->
+  <div
+    class="flex items-center gap-0 bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-5 py-3 mb-5 shadow-sm">
+    @for (step of steps; track step.label; let i = $index; let last = $last) {
+
+    <!-- Paso -->
+    <div class="flex items-center gap-2 flex-none cursor-default select-none" [class.opacity-40]="i > activeIndex">
+
+      <!-- Círculo de estado -->
+      <div
+        class="relative flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold transition-all duration-300"
+        [ngClass]="{
+               'bg-[var(--primary)] text-white shadow-[0_0_12px_rgba(0,163,224,0.35)]': i === activeIndex,
+               'bg-[var(--ok)] text-white': i < activeIndex,
+               'bg-[var(--surface-3)] text-[var(--text-3)]': i > activeIndex
+             }">
+        @if (i < activeIndex) { <i class="fa-solid fa-check text-[10px]"></i>
+          } @else {
+          <i [class]="step.icon + ' text-[11px]'"></i>
+          }
+      </div>
+
+      <!-- Label & Subtitle -->
+      <div class="flex flex-col gap-0.5 justify-center">
+        <span class="text-[12.5px] font-bold leading-tight transition-colors duration-300" [ngClass]="{
+                  'text-[var(--primary)]': i === activeIndex,
+                  'text-[var(--ok)]': i < activeIndex,
+                  'text-[var(--text-3)]': i > activeIndex
+                }">
+          {{ step.label }}
+        </span>
+        @if (step.subtitle) {
+          <span class="text-[9.5px] font-semibold uppercase tracking-wider text-[var(--text-3)] opacity-70 leading-none">
+            {{ step.subtitle }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Línea separadora (no en el último) -->
+    @if (!last) {
+    <div class="flex-1 mx-3 h-px relative overflow-hidden rounded-full bg-[var(--border)]">
+      <div class="absolute inset-y-0 left-0 bg-[var(--ok)] transition-all duration-500 rounded-full"
+        [style.width]="i < activeIndex ? '100%' : '0%'"></div>
+    </div>
+    }
+
+    }
+  </div>
+
+  <!-- ══ PASO 1: VERIFICACIÓN ══════════════════════════════════ -->
+  @if (activeIndex === 0) {
+  <div class="step-content" style="animation:atu-fade .3s ease both">
+
+    <!-- Encabezado ─────────────────────────────────────────── -->
+    <div class="section-header">
+      <div class="section-badges">
+        <span class="badge-primary">Sección 1 · Registro</span>
+        <span class="badge-muted">Hoja 1 de 2</span>
+      </div>
+      <h1 class="section-title">Verificación del transportista</h1>
+      <p class="section-subtitle">Datos de los registros oficiales. Revísalos; no son editables.</p>
+    </div>
+
+    <!-- Grid 2 columnas: Datos del transportista | Autorizaciones -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+      <!-- Tarjeta: Datos del transportista ─────────────────── -->
+      <div class="data-card !mb-0">
+        <div class="data-card__header">Datos del transportista</div>
+
+        <p-table [value]="datosTransportista" [showGridlines]="false" styleClass="datos-transportista-table"
+          [tableStyle]="{'min-width': '100%'}">
+          <ng-template pTemplate="body" let-row>
+            <tr class="datos-row">
+              <td class="datos-key">{{ row.k }}</td>
+              <td class="datos-val">{{ row.v }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Tarjeta: Autorizaciones ───────────────────────────── -->
+      <div class="data-card !mb-0">
+        <div class="data-card__header data-card__header--flex">
+          <span>Autorizaciones del transportista</span>
+          <span class="badge-count">{{ autCount }} autorizaciones</span>
+        </div>
+
+        <p-table [value]="autorizaciones" [showGridlines]="false" styleClass="autorizaciones-table"
+          [tableStyle]="{'min-width': '100%'}">
+          <ng-template pTemplate="body" let-a>
+            <tr class="aut-row">
+              <td class="aut-cell">
+                <!-- Fila superior: Servicio + Badge + Resolución -->
+                <div class="aut-top">
+                  <span class="aut-servicio">{{ a.servicio }}</span>
+                  <p-tag [value]="a.estado" [severity]="a.badgeSeverity" styleClass="aut-badge" />
+                  <span class="aut-resolucion">{{ a.resolucion }}</span>
+                </div>
+                <!-- Fila inferior: metadatos -->
+                <div class="aut-meta">
+                  <span>Autoridad: <strong>{{ a.autoridad }}</strong></span>
+                  <span>Ámbito: {{ a.ambito }}</span>
+                  <span class="mono">Vigencia: {{ a.vigencia }}</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <div class="data-card__footer-info">
+          ⓘ El subsidio aplica a los vehículos habilitados bajo <strong>cualquiera</strong>
+          de tus autorizaciones vigentes. Si una autorización no está vigente, sus
+          vehículos no serán reconocidos.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Semáforo de condiciones ──────────────────────────── -->
+    <div class="semaforo-label">Semáforo de condiciones</div>
+    <div class="semaforo-list">
+      @for (c of condiciones; track c.label) {
+      <div class="semaforo-item" [style.border-left-color]="c.barColor">
+        <div class="semaforo-item__top">
+          <span class="semaforo-glyph" [style.background]="c.barColor">
+            {{ c.glyph }}
+          </span>
+          <span class="semaforo-item__label">{{ c.label }}</span>
+          <span class="semaforo-item__estado" [class.estado-ok]="c.estadoColor === 'success'"
+            [class.estado-warn]="c.estadoColor === 'warn'" [class.estado-bad]="c.estadoColor === 'danger'">
+            {{ c.estado }}
+          </span>
+        </div>
+        <div class="semaforo-item__why">{{ c.why }}</div>
+      </div>
+      }
+    </div>
+
+    <!-- Banner de error: sin autorización vigente ────────── -->
+    @if (sinAutVigente) {
+    <div class="banner-error">
+      <span class="banner-error__icon">!</span>
+      <div class="banner-error__body">
+        <div class="banner-error__title">No cuentas con autorizaciones de transporte vigentes</div>
+        <div class="banner-error__msg">
+          Para acceder al subsidio necesitas al menos una autorización
+          <strong>vigente</strong> ante la ATU u otra autoridad competente.
+          Regulariza tu autorización y vuelve a intentarlo.
+          No puedes continuar con la solicitud.
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Botón Siguiente ─────────────────────────────────── -->
+    @if (!sinAutVigente) {
+    <div class="step-actions step-actions--end">
+      <button class="btn-primary" (click)="nextStep()">
+        Siguiente
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+    }
+
+  </div>
+  }
+
+  <!-- ══ PASO 2: VEHÍCULOS ══════════════════════════════════════ -->
+  @if (activeIndex === 1) {
+  <div class="step-content" style="animation:atu-fade .3s ease both">
+    <app-vehiculo-carga />
+
+    <div class="step-actions step-actions--start">
+      <button class="btn-secondary" (click)="prevStep()">
+        <i class="fa-solid fa-arrow-left"></i>
+        Anterior
+      </button>
+    </div>
+  </div>
+  }
+
+</div>

@@ -1,0 +1,365 @@
+// ── Animación fade (igual que el prototipo) ──────────────────
+@keyframes atu-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+// ── Contenedor principal ─────────────────────────────────────
+.verificacion-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+
+// ── Contenido del paso ───────────────────────────────────────
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// ── Encabezado de sección ────────────────────────────────────
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-badges {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.badge-primary {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  color: var(--primary-contrast);
+  background: var(--primary);
+  border-radius: 6px;
+  padding: 3px 9px;
+  text-transform: uppercase;
+}
+
+.badge-muted {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 4px 0 0;
+  color: var(--text);
+}
+
+.section-subtitle {
+  color: var(--text-3);
+  font-size: 13.5px;
+  margin: 6px 0 0;
+}
+
+// ── Data Cards ───────────────────────────────────────────────
+.data-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.data-card__header {
+  background: var(--surface-2);
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+
+  &--flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+}
+
+.badge-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: 999px;
+  padding: 3px 10px;
+  text-transform: none;
+}
+
+.data-card__footer-info {
+  padding: 11px 18px;
+  background: var(--surface-2);
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.45;
+  border-top: 1px solid var(--border);
+}
+
+// ── p-table: Datos del transportista ─────────────────────────
+::ng-deep .datos-transportista-table {
+  .p-datatable-thead { display: none; }
+  .p-datatable-tbody > tr { border: none !important; }
+
+  .datos-row {
+    border-bottom: 1px solid var(--border) !important;
+
+    &:last-child { border-bottom: none !important; }
+  }
+}
+
+.datos-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.datos-key {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  padding: 12px 0 12px 18px !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.datos-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: right;
+  padding: 12px 18px 12px 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+// ── p-table: Autorizaciones ──────────────────────────────────
+::ng-deep .autorizaciones-table {
+  .p-datatable-thead { display: none; }
+  .p-datatable-tbody > tr { border: none !important; }
+}
+
+.aut-row {
+  border-bottom: 1px solid var(--border) !important;
+
+  &:last-child { border-bottom: none !important; }
+}
+
+.aut-cell {
+  padding: 13px 18px !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.aut-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.aut-servicio {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.aut-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+}
+
+.aut-resolucion {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.aut-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--text-2);
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+}
+
+// ── Semáforo de condiciones ──────────────────────────────────
+.semaforo-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 0 2px 10px;
+}
+
+.semaforo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.semaforo-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left-width: 5px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+
+.semaforo-item__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.semaforo-glyph {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.semaforo-item__label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.semaforo-item__estado {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+
+  &.estado-ok   { color: var(--ok); }
+  &.estado-warn { color: var(--warn); }
+  &.estado-bad  { color: var(--bad); }
+}
+
+.semaforo-item__why {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 7px;
+  line-height: 1.45;
+  padding-left: 34px;
+}
+
+// ── Banner de error (sin aut. vigente) ───────────────────────
+.banner-error {
+  margin-top: 18px;
+  background: var(--bad-bg);
+  border: 1px solid var(--bad);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.banner-error__icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.banner-error__title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bad);
+}
+
+.banner-error__msg {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+// ── Botones de navegación ────────────────────────────────────
+.step-actions {
+  display: flex;
+  margin-top: 24px;
+
+  &--end   { justify-content: flex-end; }
+  &--start { justify-content: flex-start; }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+
+  &:hover {
+    filter: brightness(.92);
+    transform: translateY(-1px);
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+
+  &:hover {
+    filter: brightness(.97);
+    transform: translateY(-1px);
+  }
+}

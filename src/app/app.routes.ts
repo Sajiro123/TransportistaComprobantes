@@ -22,6 +22,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/perfil/perfil-info.component').then(m => m.PerfilInfoComponent),
       },
+      // Registro
+      {
+        path: 'registro/verificacion',
+        loadComponent: () =>
+          import('./pages/registro/verificacion/verificacion.component').then(m => m.VerificacionComponent),
+      },
       // Redirect vacío → perfil
       { path: '', redirectTo: 'perfil', pathMatch: 'full' },
     ],

@@ -1,89 +1,59 @@
-<nav class="atu-sidebar__nav">
+<nav class="flex flex-col gap-3 p-4">
 
   <!-- ── Etiqueta de sección ─────────────────────────────────── -->
-  <div class="px-4 mb-1 mt-1">
-    <span class="text-[9.5px] font-extrabold tracking-[2px] uppercase
-                 text-white/50 select-none font-bold ">
-      Navegación
-    </span>
+  <div class="px-2 mb-1 mt-2">
+    <div class="flex items-center gap-2">
+      <div class="w-1.5 h-1.5 rounded-full bg-[#00A3E0] shadow-[0_0_8px_rgba(0,163,224,0.8)]"></div>
+      <span class="text-[10px] font-bold tracking-[0.15em] uppercase text-white/50 select-none">
+        Navegación
+      </span>
+    </div>
   </div>
 
-  <!-- ══ Dashboard ══════════════════════════════════════════════ -->
-  <a routerLink="/dashboard" routerLinkActive="atu-nav-item--active" [routerLinkActiveOptions]="{exact: true}"
-    class="atu-nav-item group" (click)="onNavigate()">
+  <!-- ══ Registro ══════════════════════════════════════════════ -->
+  <a routerLink="/registro/verificacion" 
+     routerLinkActive="active-nav-item"
+     [routerLinkActiveOptions]="{exact: false}" 
+     class="group relative flex items-center gap-4 px-3 py-3 rounded-2xl border border-transparent 
+            text-white/70 hover:text-white hover:bg-white/[.03] hover:border-white/[.06] hover:shadow-lg
+            transition-all duration-300 ease-out cursor-pointer overflow-hidden" 
+     (click)="onNavigate()">
 
-    <span class="atu-nav-item__indicator"></span>
+    <!-- Fondo Activo Completo (Gradiente sutil) -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#00A3E0]/15 to-transparent opacity-0 group-[.active-nav-item]:opacity-100 pointer-events-none transition-opacity duration-500"></div>
 
-    <!-- Icono -->
-    <span class="atu-nav-item__icon
-                 flex-none flex items-center justify-center
-                 w-9 h-9 rounded-[10px]
-                 bg-white/[.07] border border-white/[.08]
-                 group-hover:bg-[#00A3E0]/15 group-hover:border-[#00A3E0]/30
-                 transition-all duration-200">
-      <i class="fa-solid fa-chart-column"></i>
-    </span>
+    <!-- Indicador Activo (Línea lateral) -->
+    <div class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-0 bg-[#00A3E0] rounded-r-md transition-all duration-300 group-[.active-nav-item]:h-3/5 group-[.active-nav-item]:shadow-[0_0_12px_#00A3E0]"></div>
 
-    <!-- Label -->
-    <span class="atu-nav-item__label
-                 flex-1 text-[13px] font-semibold tracking-[0.1px]
-                 text-white/75 group-hover:text-white
-                 transition-colors duration-200
-                 truncate">
-      Dashboard
-    </span>
-  </a>
+    <!-- Contenedor del Icono -->
+    <div class="relative flex-none flex items-center justify-center w-11 h-11 rounded-[14px]
+                bg-white/[.04] border border-white/[.08] shadow-inner
+                group-hover:bg-[#00A3E0]/15 group-hover:border-[#00A3E0]/30 group-hover:scale-110
+                group-[.active-nav-item]:bg-[#00A3E0]/25 group-[.active-nav-item]:border-[#00A3E0]/50 group-[.active-nav-item]:text-white
+                transition-all duration-300 z-10">
+      
+      <!-- Glow effect en hover/active dentro del icono -->
+      <div class="absolute inset-0 bg-gradient-to-tr from-[#00A3E0]/0 to-[#00A3E0]/30 opacity-0 group-hover:opacity-100 group-[.active-nav-item]:opacity-100 transition-opacity duration-300 rounded-[14px]"></div>
+      
+      <i class="fa-solid fa-address-card text-[18px] z-10 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,163,224,0.6)] group-[.active-nav-item]:drop-shadow-[0_0_10px_rgba(0,163,224,0.8)] group-[.active-nav-item]:text-white text-white/80"></i>
+    </div>
 
-  <!-- ══ Empresas de transporte ════════════════════════════════ -->
-  <a routerLink="/empresas" routerLinkActive="atu-nav-item--active" [routerLinkActiveOptions]="{exact: true}"
-    class="atu-nav-item group" (click)="onNavigate()">
+    <!-- Contenedor de Texto -->
+    <div class="flex flex-col flex-1 overflow-hidden z-10">
+      <span class="text-[14px] font-semibold tracking-[0.2px] text-white/80
+                   group-hover:translate-x-1 group-[.active-nav-item]:translate-x-1 group-[.active-nav-item]:text-white transition-all duration-300 truncate">
+        Registro
+      </span>
+      <span class="text-[11px] font-medium text-white/40 group-hover:text-white/60 group-[.active-nav-item]:text-white/70 transition-colors duration-300 truncate mt-0.5">
+        Gestión de verificación
+      </span>
+    </div>
+    
+    <!-- Chevron a la derecha -->
+    <div class="flex-none flex items-center justify-center w-6 h-6 rounded-full bg-white/[.02] group-hover:bg-[#00A3E0]/20 group-[.active-nav-item]:bg-[#00A3E0]/20 transition-all duration-300 z-10 group-hover:translate-x-1 group-[.active-nav-item]:translate-x-1">
+      <i class="fa-solid fa-chevron-right text-[10px] text-white/30 group-hover:text-[#00A3E0] group-[.active-nav-item]:text-[#00A3E0] transition-colors duration-300"></i>
+    </div>
 
-    <span class="atu-nav-item__indicator"></span>
-
-    <!-- Icono -->
-    <span class="atu-nav-item__icon
-                 flex-none flex items-center justify-center
-                 w-9 h-9 rounded-[10px]
-                 bg-white/[.07] border border-white/[.08]
-                 group-hover:bg-[#00A3E0]/15 group-hover:border-[#00A3E0]/30
-                 transition-all duration-200">
-      <i class="fa-solid fa-users-between-lines"></i>
-    </span>
-
-    <!-- Label -->
-    <span class="atu-nav-item__label
-                 flex-1 text-[13px] font-semibold tracking-[0.1px]
-                 text-white/75 group-hover:text-white
-                 transition-colors duration-200
-                 truncate">
-      Empresas de transporte
-    </span>
-  </a>
-
-  <!-- ══ Vehículos por Empresa ═════════════════════════════════ -->
-  <a routerLink="/vehiculo-empresa" routerLinkActive="atu-nav-item--active" [routerLinkActiveOptions]="{exact: true}"
-    class="atu-nav-item group" (click)="onNavigate()">
-
-    <span class="atu-nav-item__indicator"></span>
-
-    <!-- Icono -->
-    <span class="atu-nav-item__icon
-                 flex-none flex items-center justify-center
-                 w-9 h-9 rounded-[10px]
-                 bg-white/[.07] border border-white/[.08]
-                 group-hover:bg-[#00A3E0]/15 group-hover:border-[#00A3E0]/30
-                 transition-all duration-200">
-      <i class="fa-solid fa-bus"></i>
-    </span>
-
-    <!-- Label -->
-    <span class="atu-nav-item__label
-                 flex-1 text-[13px] font-semibold tracking-[0.1px]
-                 text-white/75 group-hover:text-white
-                 transition-colors duration-200
-                 truncate">
-      Vehículos por Empresa
-    </span>
   </a>
 
 </nav>
