@@ -1,5 +1,188 @@
 // Login Page SCSS – Premium Split-Screen Design
 // Uses global CSS variables from styles.scss
+@keyframes welcome-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes welcome-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.welcome-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(4, 24, 42, .68);
+    backdrop-filter: blur(5px);
+    animation: welcome-backdrop-in .2s ease both;
+}
+
+.welcome-modal {
+    width: min(100%, 470px);
+    padding: 30px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 24px 70px rgba(4, 30, 52, .35);
+    animation: welcome-modal-in .3s ease both;
+}
+
+.welcome-modal-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    border-radius: 14px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 22px;
+}
+
+.welcome-modal-eyebrow {
+    margin: 0 0 5px;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.welcome-modal h2 {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+}
+
+.welcome-modal-content > p:last-child {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.6;
+}
+
+.welcome-modal-button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 13px 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: var(--primary-contrast);
+    box-shadow: 0 8px 20px rgba(14, 90, 138, .25);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 750;
+    transition: filter .15s ease, transform .15s ease;
+}
+
+.welcome-modal-button:hover {
+    filter: brightness(.94);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+    .welcome-modal {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    .welcome-modal h2 {
+        font-size: 21px;
+    }
+}
+
+@keyframes recovery-fade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.recovery-view,
+.registration-view,
+.registration-details,
+.registration-confirmation,
+.recovery-code-view,
+.recovery-password-view {
+    animation: recovery-fade .3s ease both;
+}
+
+.registration-success {
+    animation: registration-pop .35s ease both;
+}
+
+@keyframes registration-pop {
+    from {
+        opacity: 0;
+        transform: scale(.96) translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.registration-spinner {
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+    flex: 0 0 16px;
+    border: 2px solid rgba(0, 76, 151, .22);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: registration-spin .75s linear infinite;
+}
+
+@keyframes registration-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.registration-details {
+    margin-top: 14px;
+}
+
+.registration-field-label {
+    display: block;
+    margin: 16px 0 7px;
+    color: var(--text-2);
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.registration-field-error {
+    margin: 5px 2px 0;
+    color: var(--bad);
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
 // ── Page shell ────────────────────────────────────────────
 .login-page {
     min-height: 100vh;

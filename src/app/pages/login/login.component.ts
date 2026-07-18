@@ -13,7 +13,7 @@ import { SessionService } from '../../core/services/session.service';
 import { ApiErrorResponse } from '../../core/models/api.models';
 import { ThemeService } from '../../core/services/theme.service';
 import Swal from 'sweetalert2';
-import { isValidRuc, isValidEmail } from '../../core/utils/validators';
+import { isValidRuc, isValidEmail, isValidPhone } from '../../core/utils/validators';
 
 // Declarar el objeto grecaptcha global (inyectado por el script de Google)
 declare const grecaptcha: any;
@@ -47,6 +47,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   showPassword = false;
   showPassword2 = false;
   isLoading = false;
+  showWelcomeModal = true;
+
+  closeWelcomeModal(): void {
+    this.showWelcomeModal = false;
+  }
 
   // ── reCAPTCHA ─────────────────────────────────────────
   recaptchaSiteKey =
@@ -64,6 +69,206 @@ export class LoginComponent implements OnInit, OnDestroy {
   // ── Login form ────────────────────────────────────────
   loginEmail = '';
   loginPassword = '';
+  loginDocumentType: 'RUC' | 'DNI' = 'RUC';
+  loginDocumentTouched = false;
+
+  get loginDocumentLabel(): string {
+    return `Número de ${this.loginDocumentType}`;
+  }
+
+  get loginDocumentPlaceholder(): string {
+    return this.loginDocumentType === 'RUC'
+      ? 'Ingrese su número de RUC'
+      : 'Ingrese su número de DNI';
+  }
+
+  get loginDocumentMaxLength(): number {
+    return this.loginDocumentType === 'RUC' ? 11 : 8;
+  }
+
+  get loginDocumentError(): string {
+    if (!this.loginDocumentTouched) return '';
+    if (!this.loginEmail) return `Ingrese su número de ${this.loginDocumentType}.`;
+
+    if (this.loginDocumentType === 'RUC') {
+      return isValidRuc(this.loginEmail)
+        ? ''
+        : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
+    }
+
+    return /^\d{8}$/.test(this.loginEmail)
+      ? ''
+      : 'El DNI debe tener exactamente 8 dígitos.';
+  }
+
+  selectLoginDocumentType(type: 'RUC' | 'DNI'): void {
+    if (this.loginDocumentType === type) return;
+    this.loginDocumentType = type;
+    this.loginEmail = '';
+    this.loginDocumentTouched = false;
+    this.clearAlert();
+  }
+
+  onLoginDocumentInput(): void {
+    this.loginEmail = this.loginEmail
+      .replace(/\D/g, '')
+      .slice(0, this.loginDocumentMaxLength);
+    this.loginDocumentTouched = true;
+  }
+
+  // ── Dummy registration flow (pendiente de servicios SUNAT/registro) ──
+  registrationRuc = '';
+  registrationRucTouched = false;
+  registrationValidating = false;
+  registrationRucValidated = false;
+  registrationCompanyName = 'Transportes Lima Sur S.A.C.';
+  registrationContactName = '';
+  registrationEmail = '';
+  registrationPhone = '';
+  registrationPassword = '';
+  registrationSubmitted = false;
+  registrationStage: 'form' | 'confirmation' | 'success' = 'form';
+  registrationCode = '';
+  registrationCodeError = '';
+  registrationCodeResent = false;
+  private registrationValidationTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  get registrationRucError(): string {
+    if (!this.registrationRucTouched) return '';
+    if (!this.registrationRuc) return 'Ingrese el RUC del transportista.';
+    return isValidRuc(this.registrationRuc)
+      ? ''
+      : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
+  }
+
+  get registrationContactNameError(): string {
+    return this.registrationSubmitted && !this.registrationContactName.trim()
+      ? 'Ingrese los nombres y apellidos de la persona de contacto.'
+      : '';
+  }
+
+  get registrationEmailError(): string {
+    if (!this.registrationSubmitted) return '';
+    if (!this.registrationEmail.trim()) return 'Ingrese el correo electrónico.';
+    return isValidEmail(this.registrationEmail) ? '' : 'Ingrese un correo electrónico válido.';
+  }
+
+  get registrationPhoneError(): string {
+    if (!this.registrationSubmitted) return '';
+    if (!this.registrationPhone) return 'Ingrese el teléfono de contacto.';
+    return isValidPhone(this.registrationPhone)
+      ? ''
+      : 'Ingrese un celular peruano de 9 dígitos que comience con 9.';
+  }
+
+  get registrationPasswordError(): string {
+    if (!this.registrationSubmitted) return '';
+    if (!this.registrationPassword) return 'Ingrese una clave.';
+    return this.registrationPassword.length >= 8
+      ? ''
+      : 'La clave debe tener al menos 8 caracteres.';
+  }
+
+  onRegistrationRucInput(): void {
+    this.registrationRuc = this.registrationRuc.replace(/\D/g, '').slice(0, 11);
+    this.registrationRucTouched = true;
+    this.clearAlert();
+  }
+
+  validateRegistrationRuc(): void {
+    this.clearAlert();
+    this.registrationRucTouched = true;
+    if (this.registrationRucError || this.registrationValidating) return;
+
+    this.registrationValidating = true;
+    this.registrationValidationTimeout = setTimeout(() => {
+      this.registrationValidating = false;
+      this.registrationRucValidated = true;
+      this.registrationValidationTimeout = null;
+    }, 1400);
+  }
+
+  changeRegistrationRuc(): void {
+    if (this.registrationValidationTimeout) {
+      clearTimeout(this.registrationValidationTimeout);
+      this.registrationValidationTimeout = null;
+    }
+    this.registrationValidating = false;
+    this.registrationRucValidated = false;
+    this.registrationRucTouched = false;
+    this.registrationSubmitted = false;
+    this.registrationRuc = '';
+    this.registrationContactName = '';
+    this.registrationEmail = '';
+    this.registrationPhone = '';
+    this.registrationPassword = '';
+    this.registrationStage = 'form';
+    this.registrationCode = '';
+    this.registrationCodeError = '';
+    this.registrationCodeResent = false;
+    this.clearAlert();
+  }
+
+  onRegistrationPhoneInput(): void {
+    this.registrationPhone = this.registrationPhone.replace(/\D/g, '').slice(0, 9);
+  }
+
+  submitDummyRegistration(): void {
+    this.clearAlert();
+    this.registrationSubmitted = true;
+    if (
+      this.registrationContactNameError ||
+      this.registrationEmailError ||
+      this.registrationPhoneError ||
+      this.registrationPasswordError
+    ) {
+      this.showAlert('Complete correctamente los datos obligatorios.', 'error');
+      return;
+    }
+
+    this.registrationStage = 'confirmation';
+    this.registrationCode = '';
+    this.registrationCodeError = '';
+    this.registrationCodeResent = false;
+  }
+
+  onRegistrationCodeInput(): void {
+    this.registrationCode = this.registrationCode.replace(/\D/g, '').slice(0, 6);
+    this.registrationCodeError = '';
+  }
+
+  verifyDummyRegistrationCode(): void {
+    if (this.registrationCode !== '123123') {
+      this.registrationCodeError = 'Código incorrecto. Revísalo e intenta de nuevo.';
+      return;
+    }
+
+    this.registrationCodeError = '';
+    this.registrationStage = 'success';
+  }
+
+  resendDummyRegistrationCode(): void {
+    this.registrationCode = '';
+    this.registrationCodeError = '';
+    this.registrationCodeResent = true;
+  }
+
+  correctRegistrationData(): void {
+    this.registrationStage = 'form';
+    this.registrationCode = '';
+    this.registrationCodeError = '';
+    this.registrationCodeResent = false;
+    this.clearAlert();
+  }
+
+  goToLoginAfterRegistration(): void {
+    const registeredRuc = this.registrationRuc;
+    this.changeRegistrationRuc();
+    this.showForm('login');
+    this.loginDocumentType = 'RUC';
+    this.loginEmail = registeredRuc;
+    this.loginDocumentTouched = false;
+  }
 
   // ── Register form ─────────────────────────────────────
   regEmail = '';
@@ -252,7 +457,42 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   // ── Recovery form ─────────────────────────────────────
-  recEmail = '';
+  recRuc = '';
+  recRucTouched = false;
+  recoveryStage: 'ruc' | 'code' | 'password' | 'success' = 'ruc';
+  recoveryCode = '';
+  recoveryCodeError = '';
+  recoveryCodeResent = false;
+  recoveryNewPassword = '';
+  recoveryConfirmPassword = '';
+  recoveryPasswordSubmitted = false;
+
+  get recoveryRucError(): string {
+    if (!this.recRucTouched) return '';
+    if (!this.recRuc) return 'Ingrese el RUC del transportista.';
+    return isValidRuc(this.recRuc)
+      ? ''
+      : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
+  }
+
+  onRecoveryRucInput(): void {
+    this.recRuc = this.recRuc.replace(/\D/g, '').slice(0, 11);
+    this.recRucTouched = true;
+    this.clearAlert();
+  }
+
+  openRecovery(): void {
+    this.recoveryStage = 'ruc';
+    this.recRuc = '';
+    this.recRucTouched = false;
+    this.recoveryCode = '';
+    this.recoveryCodeError = '';
+    this.recoveryCodeResent = false;
+    this.recoveryNewPassword = '';
+    this.recoveryConfirmPassword = '';
+    this.recoveryPasswordSubmitted = false;
+    this.showForm('recuperacion');
+  }
 
   // ── Entity lists ──────────────────────────────────────
   entidadesFiltradas: string[] = [];
@@ -276,6 +516,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.sliderInterval) {
       clearInterval(this.sliderInterval);
+    }
+    if (this.registrationValidationTimeout) {
+      clearTimeout(this.registrationValidationTimeout);
     }
   }
 
@@ -340,13 +583,19 @@ export class LoginComponent implements OnInit, OnDestroy {
   // ── Login ─────────────────────────────────────────────
   onLogin(): void {
     this.clearAlert();
+    this.loginDocumentTouched = true;
 
     // Sanitizar inputs
     const usuario = this.loginEmail.trim();
     const password = this.loginPassword;
 
-    if (!usuario || !password) {
-      this.showAlert('Ingrese usuario y contraseña.', 'error');
+    if (this.loginDocumentError) {
+      this.showAlert(this.loginDocumentError, 'error');
+      return;
+    }
+
+    if (!password) {
+      this.showAlert('Ingrese su contraseña.', 'error');
       return;
     }
 
@@ -458,12 +707,80 @@ export class LoginComponent implements OnInit, OnDestroy {
   // ── Recovery ──────────────────────────────────────────
   onRecovery(): void {
     this.clearAlert();
-    const res = this.authService.solicitarRecuperacion(this.recEmail.trim());
-    if (res.success) {
-      this.showAlert(res.message!, 'success');
-    } else {
-      this.showAlert(res.error!, 'error');
+    this.recRucTouched = true;
+    if (this.recoveryRucError) {
+      this.showAlert(this.recoveryRucError, 'error');
+      return;
     }
+
+    this.recoveryStage = 'code';
+    this.recoveryCode = '';
+    this.recoveryCodeError = '';
+    this.recoveryCodeResent = false;
+  }
+
+  onRecoveryKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Enter') this.onRecovery();
+  }
+
+  onRecoveryCodeInput(): void {
+    this.recoveryCode = this.recoveryCode.replace(/\D/g, '').slice(0, 6);
+    this.recoveryCodeError = '';
+    this.clearAlert();
+  }
+
+  verifyDummyRecoveryCode(): void {
+    this.clearAlert();
+    if (this.recoveryCode !== '123123') {
+      this.recoveryCodeError = 'Código incorrecto. Revísalo e intenta de nuevo.';
+      return;
+    }
+
+    this.recoveryCodeError = '';
+    this.recoveryStage = 'password';
+    this.recoveryNewPassword = '';
+    this.recoveryConfirmPassword = '';
+    this.recoveryPasswordSubmitted = false;
+  }
+
+  resendDummyRecoveryCode(): void {
+    this.recoveryCode = '';
+    this.recoveryCodeError = '';
+    this.recoveryCodeResent = true;
+    this.clearAlert();
+  }
+
+  get recoveryNewPasswordError(): string {
+    if (!this.recoveryPasswordSubmitted) return '';
+    if (!this.recoveryNewPassword) return 'Ingrese la nueva clave.';
+    return this.recoveryNewPassword.length >= 8
+      ? ''
+      : 'La nueva clave debe tener al menos 8 caracteres.';
+  }
+
+  get recoveryConfirmPasswordError(): string {
+    if (!this.recoveryPasswordSubmitted) return '';
+    if (!this.recoveryConfirmPassword) return 'Confirme la nueva clave.';
+    return this.recoveryNewPassword === this.recoveryConfirmPassword
+      ? ''
+      : 'Las claves no coinciden.';
+  }
+
+  saveDummyRecoveryPassword(): void {
+    this.clearAlert();
+    this.recoveryPasswordSubmitted = true;
+    if (this.recoveryNewPasswordError || this.recoveryConfirmPasswordError) return;
+
+    this.recoveryStage = 'success';
+  }
+
+  goToLoginAfterRecovery(): void {
+    const recoveredRuc = this.recRuc;
+    this.showForm('login');
+    this.loginDocumentType = 'RUC';
+    this.loginEmail = recoveredRuc;
+    this.loginPassword = '';
+    this.loginDocumentTouched = false;
   }
 
   // ── Alert icon ────────────────────────────────────────

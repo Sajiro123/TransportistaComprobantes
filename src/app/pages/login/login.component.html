@@ -1,3 +1,24 @@
+@if (showWelcomeModal) {
+<div class="welcome-modal-backdrop" role="presentation">
+  <section class="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcome-modal-title"
+    aria-describedby="welcome-modal-description">
+    <div class="welcome-modal-icon" aria-hidden="true">
+      <i class="fa-solid fa-circle-info"></i>
+    </div>
+    <div class="welcome-modal-content">
+      <p class="welcome-modal-eyebrow">Aviso importante</p>
+      <h2 id="welcome-modal-title">Sistema de comprobantes</h2>
+      <p id="welcome-modal-description">
+        ESTÁS EN EL SISTEMA PARA LA CARGA DE COMPROBANTES DE LOS TRANSPORTISTAS.
+      </p>
+    </div>
+    <button type="button" class="welcome-modal-button" (click)="closeWelcomeModal()">
+      Entendido
+    </button>
+  </section>
+</div>
+}
+
 <div style="min-height:100vh; display:flex; background:var(--bg); color:var(--text)">
 
   <!-- ── Left Side: Brand Panel / Slider ── -->
@@ -21,13 +42,45 @@
         <img src="images/logo-atu-blanco.png" alt="ATU - Autoridad de Transporte Urbano para Lima y Callao"
           style="height:80px; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.25)); object-fit:contain" />
       </div>
-      <h2 class="text-3xl font-extrabold mb-4 text-white drop-shadow-md">SUBSIDIO AL TRANSPORTE NACIONAL</h2>
-      <p class="text-sm opacity-90 max-w-md leading-relaxed drop-shadow-sm">
-        Registro de títulos habilitantes del transporte de personas y mercancías del ámbito regional y provincial.
-
-        Plataforma para la remisión de información de autorizaciones, habilitaciones vehiculares, suspensiones y
-        cancelaciones, conforme al Art. 5.2 del DU 004-2026.
+      <p class="text-sm font-extrabold uppercase tracking-[0.16em] mb-4 text-white/85 drop-shadow-sm">
+        Mesa de Partes Virtual
       </p>
+      <h2 class="text-3xl font-extrabold mb-4 text-white drop-shadow-md">
+        Solicitud de subsidio al combustible
+      </h2>
+      <p class="text-sm opacity-90 max-w-md leading-relaxed drop-shadow-sm">
+        Trámite para transportistas con autorización vigente y vehículos habilitados, conforme al
+        <strong class="font-extrabold text-white">DU 004-2026</strong>. Tu solicitud tiene carácter de declaración
+        jurada.
+      </p>
+
+      <div class="flex flex-col gap-4 w-full max-w-md mt-8 text-left">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-white/15" aria-hidden="true">
+            <i class="fa-solid fa-droplet"></i>
+          </span>
+          <strong class="text-sm leading-snug text-white">
+            Devuelve S/ 4.00 por galón de diésel B5/B20 (azufre ≤50 ppm)
+          </strong>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-white/15" aria-hidden="true">
+            <i class="fa-solid fa-sheet-plastic"></i>
+          </span>
+          <strong class="text-sm leading-snug text-white">
+            Una sola solicitud por transportista titular
+          </strong>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-9 h-9 shrink-0 rounded-lg bg-white/15" aria-hidden="true">
+            <i class="fa-regular fa-calendar"></i>
+          </span>
+          <strong class="text-sm leading-snug text-white">
+            Compras entre el <span class="whitespace-nowrap">29/05/2026</span> y el
+            <span class="whitespace-nowrap">28/07/2026</span>
+          </strong>
+        </div>
+      </div>
 
       <!-- Indicadores -->
       <div style="display:flex; gap:8px; justify-content:center; margin-top:32px;">
@@ -58,13 +111,16 @@
       <div style="position:absolute; top:-40px; right:-40px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,0.06); pointer-events:none"></div>
       <div style="position:absolute; bottom:-60px; left:-30px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,0.05); pointer-events:none"></div>
       <!-- Title -->
+      <p style="font-size:0.7rem; font-weight:800; color:rgba(255,255,255,0.82); letter-spacing:0.14em; text-transform:uppercase; margin:0 0 9px; position:relative; z-index:1">
+        Mesa de Partes Virtual
+      </p>
       <h2 style="font-size:clamp(1rem, 4.5vw, 1.35rem); font-weight:800; color:#fff; letter-spacing:-0.3px; margin:0 0 10px; line-height:1.25; text-shadow:0 2px 8px rgba(0,0,0,0.25); position:relative; z-index:1">
-        SUBSIDIO AL TRANSPORTE NACIONAL
+        Solicitud de subsidio al combustible
       </h2>
       <!-- Description -->
       <p style="font-size:clamp(0.72rem, 3vw, 0.82rem); color:rgba(255,255,255,0.82); line-height:1.6; max-width:340px; margin:0 auto; position:relative; z-index:1">
-        Registro de títulos habilitantes del transporte de personas y mercancías del ámbito regional y provincial.
-        Plataforma conforme al Art. 5.2 del DU 004-2026.
+        Trámite para transportistas con autorización vigente y vehículos habilitados, conforme al
+        <strong>DU 004-2026</strong>. Tu solicitud tiene carácter de declaración jurada.
       </p>
       <!-- Bottom wave shape -->
       <div style="position:absolute; bottom:-1px; left:0; right:0; height:28px; overflow:hidden">
@@ -106,7 +162,8 @@
         @if (alert) {
         <div
           style="display:flex; align-items:center; gap:9px; background:var(--bad-bg); border:1px solid var(--bad); border-radius:10px; padding:10px 12px; margin-bottom:16px; font-size:12.5px; font-weight:600; color:var(--bad)">
-          ⚠️ {{ alert.message }}
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          {{ alert.message }}
         </div>
         }
 
@@ -120,10 +177,44 @@
         </div> -->
 
         <label
-          style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">Usuario</label>
-        <input type="text"
-          class="w-full px-4 py-3 mb-4 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-gray-400"
-          [(ngModel)]="loginEmail" placeholder="Ingrese su usuario" (keydown)="onLoginKeydown($event)" />
+          style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">Tipo de
+          documento</label>
+        <div style="display:flex; gap:8px; margin-bottom:16px">
+          <button type="button" (click)="selectLoginDocumentType('RUC')"
+            [attr.aria-pressed]="loginDocumentType === 'RUC'"
+            style="flex:1; padding:11px; border-radius:10px; border:1.5px solid; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s"
+            [style.border-color]="loginDocumentType === 'RUC' ? 'var(--primary)' : 'var(--border)'"
+            [style.background]="loginDocumentType === 'RUC' ? 'var(--primary-soft)' : 'var(--surface)'"
+            [style.color]="loginDocumentType === 'RUC' ? 'var(--primary)' : 'var(--text-2)'">
+            RUC
+          </button>
+          <button type="button" (click)="selectLoginDocumentType('DNI')"
+            [attr.aria-pressed]="loginDocumentType === 'DNI'"
+            style="flex:1; padding:11px; border-radius:10px; border:1.5px solid; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s"
+            [style.border-color]="loginDocumentType === 'DNI' ? 'var(--primary)' : 'var(--border)'"
+            [style.background]="loginDocumentType === 'DNI' ? 'var(--primary-soft)' : 'var(--surface)'"
+            [style.color]="loginDocumentType === 'DNI' ? 'var(--primary)' : 'var(--text-2)'">
+            DNI
+          </button>
+        </div>
+
+        <label for="login-document"
+          style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">
+          {{ loginDocumentLabel }}
+        </label>
+        <div style="margin-bottom:16px">
+          <input id="login-document" type="text" inputmode="numeric" autocomplete="username"
+            class="w-full px-4 py-3 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-gray-400"
+            [(ngModel)]="loginEmail" [attr.maxlength]="loginDocumentMaxLength"
+            [placeholder]="loginDocumentPlaceholder" [attr.aria-invalid]="!!loginDocumentError"
+            (input)="onLoginDocumentInput()" (blur)="loginDocumentTouched = true"
+            (keydown)="onLoginKeydown($event)" />
+          @if (loginDocumentError) {
+          <p style="margin:5px 2px 0; color:var(--bad); font-size:11.5px; font-weight:600; line-height:1.35">
+            {{ loginDocumentError }}
+          </p>
+          }
+        </div>
 
         <label
           style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">Contraseña</label>
@@ -137,17 +228,12 @@
           </button>
         </div>
 
-
-        <!-- <div
-          style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; font-size:12.5px">
-          <a (click)="showForm('recuperacion')"
-            style="color:var(--primary); font-weight:600; text-decoration:none; cursor:pointer">¿Olvidó su
-            contraseña?</a> -->
-        <!-- <a (click)="showForm('registro')"
-            style="color:var(--primary); font-weight:700; text-decoration:none; cursor:pointer">Crear una cuenta</a> -->
-        <!-- </div> -->
-
-
+        <div style="text-align:right; margin-bottom:20px">
+          <button type="button" (click)="openRecovery()"
+            style="padding:0; background:transparent; border:none; color:var(--primary); font-size:13px; font-weight:600; cursor:pointer">
+            ¿Olvidaste tu clave?
+          </button>
+        </div>
 
         <button (click)="onLogin()" [disabled]="isLoading"
           style="width:100%; height:44px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 6px 16px rgba(14,90,138,0.22); transition:filter 0.15s, opacity 0.15s"
@@ -160,43 +246,428 @@
           }
         </button>
 
+        <div style="text-align:center; margin:18px 0 0; padding-top:18px; border-top:1px solid var(--border)">
+          <span style="font-size:13.5px; color:var(--text-3)">¿No tienes cuenta? </span>
+          <button type="button" (click)="showForm('registro')"
+            style="padding:0; background:transparent; border:none; color:var(--primary); font-size:13.5px; font-weight:700; cursor:pointer">
+            Regístrate aquí
+          </button>
+        </div>
+
+      </div>
+      }
+
+      <!-- ── REGISTRO DUMMY ── -->
+      @if (activeForm === 'registro') {
+      <div class="registration-view"
+        style="background:var(--surface); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); padding:26px 24px">
+        @if (registrationStage === 'form') {
+        <button type="button" (click)="showForm('login')"
+          style="display:inline-flex; align-items:center; gap:6px; background:transparent; border:none; color:var(--primary); font-size:13px; font-weight:700; cursor:pointer; padding:0; margin-bottom:14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          Volver al ingreso
+        </button>
+
+        <h2 style="font-size:24px; font-weight:800; margin:0 0 6px">Crear cuenta</h2>
+        <p style="color:var(--text-3); font-size:14px; margin:0 0 22px; line-height:1.5">
+          Validamos tu RUC en SUNAT y enviamos un código a tu correo.
+        </p>
+
+        @if (alert) {
+        <div
+          style="display:flex; align-items:flex-start; gap:9px; border:1px solid; border-radius:10px; padding:10px 12px; margin-bottom:16px; font-size:12.5px; font-weight:600; line-height:1.4"
+          [style.background]="alert.type === 'success' ? 'var(--ok-bg)' : 'var(--bad-bg)'"
+          [style.border-color]="alert.type === 'success' ? 'var(--ok)' : 'var(--bad)'"
+          [style.color]="alert.type === 'success' ? 'var(--ok)' : 'var(--bad)'">
+          @if (alert.type === 'success') {
+          <i class="fa-solid fa-check" aria-hidden="true"></i>
+          } @else {
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          }
+          <span>{{ alert.message }}</span>
+        </div>
+        }
+
+        <label for="registration-ruc"
+          style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">
+          RUC del transportista
+        </label>
+        <div style="display:flex; gap:8px; margin-bottom:8px">
+          <input id="registration-ruc" type="text" inputmode="numeric" maxlength="11" placeholder="20512345678"
+            [(ngModel)]="registrationRuc" [disabled]="registrationRucValidated || registrationValidating"
+            [attr.aria-invalid]="!!registrationRucError" (input)="onRegistrationRucInput()"
+            (blur)="registrationRucTouched = true" (keydown.enter)="validateRegistrationRuc()"
+            style="flex:1; min-width:0; background:var(--surface); border:1px solid; border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text); font-family:'JetBrains Mono',monospace; outline:none"
+            [style.border-color]="registrationRucValidated ? 'var(--ok)' : 'var(--border)'" />
+          @if (registrationRucValidated) {
+          <button type="button" (click)="changeRegistrationRuc()"
+            style="flex:0 0 auto; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0 14px; font-size:12.5px; font-weight:700; color:var(--text-2); cursor:pointer">
+            Cambiar
+          </button>
+          }
+        </div>
+
+        @if (registrationRucError) {
+        <p style="margin:0 2px 12px; color:var(--bad); font-size:11.5px; font-weight:600; line-height:1.35">
+          {{ registrationRucError }}
+        </p>
+        }
+
+        @if (registrationValidating) {
+        <div role="status" aria-live="polite"
+          style="display:flex; align-items:flex-start; gap:9px; margin:12px 0 0; padding:10px 12px; border:1px solid var(--primary); border-radius:10px; background:var(--primary-soft); color:var(--primary)">
+          <span class="registration-spinner" aria-hidden="true"></span>
+          <div>
+            <div style="font-size:13px; font-weight:800">Validando RUC en SUNAT...</div>
+            <div style="margin-top:2px; color:var(--text-3); font-size:12px">Consultando el padrón de SUNAT. Un momento.</div>
+          </div>
+        </div>
+        } @else if (!registrationRucValidated) {
+        <button type="button" (click)="validateRegistrationRuc()"
+          style="width:100%; margin-top:10px; border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; box-shadow:0 8px 20px rgba(14,90,138,.28); background:var(--primary); color:var(--primary-contrast); cursor:pointer">
+          Validar RUC
+        </button>
+        }
+
+        @if (registrationRucValidated) {
+        <div class="registration-details">
+          <div
+            style="margin-bottom:14px; background:var(--ok-bg); border:1px solid var(--ok); border-radius:10px; padding:11px 13px; display:flex; gap:9px; align-items:flex-start">
+            <span
+              style="flex:0 0 auto; width:18px; height:18px; border-radius:50%; background:var(--ok); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px"
+              aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+            <div style="min-width:0">
+              <div style="font-size:13px; font-weight:700; color:var(--ok)">{{ registrationCompanyName }}</div>
+              <div style="font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.4">
+                RUC ACTIVO y HABIDO en SUNAT. Continúa para confirmar tu correo.
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border); margin-top:8px; padding-top:16px">
+            <div
+              style="font-size:11.5px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px">
+              Datos de contacto
+            </div>
+
+            <label for="registration-contact"
+              style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">
+              Persona de contacto <span style="color:var(--bad)">*</span>
+            </label>
+            <input id="registration-contact" type="text" [(ngModel)]="registrationContactName"
+              placeholder="Nombres y apellidos"
+              style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text)" />
+            @if (registrationContactNameError) {
+            <p class="registration-field-error">{{ registrationContactNameError }}</p>
+            }
+
+            <label for="registration-email" class="registration-field-label">
+              Correo electrónico <span style="color:var(--bad)">*</span>
+            </label>
+            <input id="registration-email" type="email" [(ngModel)]="registrationEmail"
+              placeholder="empresa@correo.com"
+              style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text)" />
+            @if (registrationEmailError) {
+            <p class="registration-field-error">{{ registrationEmailError }}</p>
+            }
+
+            <label for="registration-phone" class="registration-field-label">
+              Teléfono de contacto <span style="color:var(--bad)">*</span>
+            </label>
+            <input id="registration-phone" type="text" inputmode="tel" maxlength="9"
+              [(ngModel)]="registrationPhone" (input)="onRegistrationPhoneInput()" placeholder="+51 987 654 321"
+              style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text); font-family:'JetBrains Mono',monospace" />
+            @if (registrationPhoneError) {
+            <p class="registration-field-error">{{ registrationPhoneError }}</p>
+            }
+
+            <label for="registration-password" class="registration-field-label">
+              Crea tu clave <span style="color:var(--bad)">*</span>
+            </label>
+            <input id="registration-password" type="password" [(ngModel)]="registrationPassword"
+              placeholder="Mínimo 8 caracteres"
+              style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text)" />
+            @if (registrationPasswordError) {
+            <p class="registration-field-error">{{ registrationPasswordError }}</p>
+            }
+            <p style="font-size:11.5px; color:var(--text-3); margin:8px 0 18px; line-height:1.4">
+              Correo y teléfono son obligatorios: los usamos para confirmar tu cuenta y como datos de contacto del
+              trámite.
+            </p>
+          </div>
+
+          <button type="button" (click)="submitDummyRegistration()"
+            style="width:100%; border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; box-shadow:0 8px 20px rgba(14,90,138,.28); background:var(--primary); color:var(--primary-contrast); cursor:pointer">
+            Enviar código al correo
+          </button>
+        </div>
+        }
+        } @else if (registrationStage === 'confirmation') {
+        <div class="registration-confirmation">
+          <div
+            style="width:52px; height:52px; border-radius:14px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:14px"
+            aria-hidden="true">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <h2 style="font-size:24px; font-weight:800; margin:0 0 6px">Confirma tu correo</h2>
+          <p style="color:var(--text-3); font-size:14px; margin:0 0 6px; line-height:1.5">
+            Enviamos un código de 6 dígitos a
+          </p>
+          <p style="font-size:14px; font-weight:700; margin:0 0 22px; word-break:break-all">
+            {{ registrationEmail }}
+          </p>
+
+          <label for="registration-code"
+            style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">
+            Código de confirmación
+          </label>
+          <input id="registration-code" type="text" inputmode="numeric" maxlength="6" placeholder="______"
+            [(ngModel)]="registrationCode" (input)="onRegistrationCodeInput()"
+            (keydown.enter)="verifyDummyRegistrationCode()" [attr.aria-invalid]="!!registrationCodeError"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; font-size:26px; letter-spacing:14px; text-align:center; color:var(--text); font-family:'JetBrains Mono',monospace; margin-bottom:10px; outline:none" />
+
+          @if (registrationCodeError) {
+          <div style="font-size:12px; font-weight:600; color:var(--bad); margin-bottom:10px" role="alert">
+            {{ registrationCodeError }}
+          </div>
+          }
+
+          @if (registrationCodeResent) {
+          <div style="font-size:12px; font-weight:600; color:var(--ok); margin-bottom:10px" role="status">
+            Enviamos un nuevo código a tu correo.
+          </div>
+          }
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+            <span style="font-size:12.5px; color:var(--text-3)">¿No llegó?</span>
+            <button type="button" (click)="resendDummyRegistrationCode()"
+              style="padding:0; background:transparent; border:none; color:var(--primary); font-size:13px; font-weight:700; cursor:pointer">
+              Reenviar código
+            </button>
+          </div>
+
+          <button type="button" (click)="verifyDummyRegistrationCode()"
+            style="width:100%; background:var(--primary); color:var(--primary-contrast); border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(14,90,138,.28)">
+            Verificar código
+          </button>
+          <div style="text-align:center; margin-top:14px">
+            <button type="button" (click)="correctRegistrationData()"
+              style="padding:0; background:transparent; border:none; color:var(--primary); font-size:13px; font-weight:600; cursor:pointer">
+              Corregir mis datos
+            </button>
+          </div>
+        </div>
+        } @else {
+        <div class="registration-success" style="text-align:center">
+          <div
+            style="width:66px; height:66px; border-radius:50%; background:var(--ok-bg); border:2px solid var(--ok); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:30px; color:var(--ok); font-weight:800"
+            aria-hidden="true">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h2 style="font-size:24px; font-weight:800; margin:0 0 8px">¡Cuenta creada!</h2>
+          <p style="color:var(--text-2); font-size:14px; margin:0 auto 22px; line-height:1.5; max-width:340px">
+            Tus datos fueron <strong>guardados y verificados</strong> correctamente. Ya puedes iniciar sesión con tu RUC
+            y tu clave.
+          </p>
+          <button type="button" (click)="goToLoginAfterRegistration()"
+            style="width:100%; background:var(--primary); color:var(--primary-contrast); border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(14,90,138,.28)">
+            Ir a iniciar sesión
+          </button>
+        </div>
+        }
       </div>
       }
 
 
       <!-- ── RECUPERACIÓN FORM ── -->
       @if (activeForm === 'recuperacion') {
-      <div
+      <div class="recovery-view"
         style="background:var(--surface); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); padding:26px 24px">
-        <h2 style="font-size:16px; font-weight:800; margin:0 0 10px">Recuperar contraseña</h2>
-        <p style="font-size:12.5px; color:var(--text-3); margin-bottom:18px; line-height:1.4">
-          Ingrese su correo electrónico registrado. Le enviaremos un enlace de recuperación para restablecer su clave.
+        <button type="button" (click)="showForm('login')"
+          style="display:inline-flex; align-items:center; gap:6px; background:transparent; border:none; color:var(--primary); font-size:13px; font-weight:700; cursor:pointer; padding:0; margin-bottom:14px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          Volver al ingreso
+        </button>
+
+        @if (recoveryStage === 'ruc') {
+        <h2 style="font-size:24px; font-weight:800; margin:0 0 6px">Recuperar clave</h2>
+        <p style="color:var(--text-3); font-size:14px; margin:0 0 22px; line-height:1.5">
+          Ingresa tu RUC y enviaremos un código de recuperación al correo registrado.
         </p>
 
         @if (alert) {
         <div
-          style="display:flex; align-items:center; gap:9px; background:var(--bad-bg); border:1px solid var(--bad); border-radius:10px; padding:10px 12px; margin-bottom:16px; font-size:12.5px; font-weight:600; color:var(--bad)">
-          ⚠️ {{ alert.message }}
+          style="display:flex; align-items:flex-start; gap:9px; border:1px solid; border-radius:10px; padding:10px 12px; margin-bottom:16px; font-size:12.5px; font-weight:600; line-height:1.4"
+          [style.background]="alert.type === 'success' ? 'var(--ok-bg)' : 'var(--bad-bg)'"
+          [style.border-color]="alert.type === 'success' ? 'var(--ok)' : 'var(--bad)'"
+          [style.color]="alert.type === 'success' ? 'var(--ok)' : 'var(--bad)'">
+          @if (alert.type === 'success') {
+          <i class="fa-solid fa-check" aria-hidden="true"></i>
+          } @else {
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          }
+          <span>{{ alert.message }}</span>
         </div>
         }
 
-        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:18px">
-          <label style="font-size:12.5px; font-weight:700; color:var(--text-2)">Correo institucional *</label>
-          <input type="email" [(ngModel)]="recEmail" placeholder="funcionario@gob.pe"
-            style="width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text); outline:none" />
+        <div style="margin-bottom:18px">
+          <label for="recovery-ruc"
+            style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">
+            RUC del transportista
+          </label>
+          <input id="recovery-ruc" type="text" inputmode="numeric" maxlength="11" autocomplete="username"
+            [(ngModel)]="recRuc" placeholder="20512345678" [attr.aria-invalid]="!!recoveryRucError"
+            (input)="onRecoveryRucInput()" (blur)="recRucTouched = true"
+            (keydown)="onRecoveryKeydown($event)"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text); font-family:'JetBrains Mono',monospace; outline:none" />
+          @if (recoveryRucError) {
+          <p style="margin:5px 2px 0; color:var(--bad); font-size:11.5px; font-weight:600; line-height:1.35">
+            {{ recoveryRucError }}
+          </p>
+          }
         </div>
 
         <button (click)="onRecovery()"
-          style="width:100%; height:44px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 6px 16px rgba(14,90,138,0.22); margin-bottom:16px">
-          Enviar enlace
+          style="width:100%; background:var(--primary); color:var(--primary-contrast); border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(14,90,138,.28)">
+          Enviar código de recuperación
         </button>
+        } @else if (recoveryStage === 'code') {
+        <div class="recovery-code-view">
+          <div
+            style="width:52px; height:52px; border-radius:14px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:14px"
+            aria-hidden="true">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <h2 style="font-size:24px; font-weight:800; margin:0 0 6px">Ingresa el código</h2>
+          <p style="color:var(--text-3); font-size:14px; margin:0 0 6px; line-height:1.5">
+            Enviamos un código de 6 dígitos al correo registrado para
+          </p>
+          <p style="font-size:14px; font-weight:700; margin:0 0 22px; font-family:'JetBrains Mono',monospace">
+            RUC {{ recRuc }}
+          </p>
 
-        <div style="text-align:center; font-size:12.5px">
-          <a (click)="showForm('login')"
-            style="color:var(--primary); font-weight:700; text-decoration:none; cursor:pointer; display:inline-flex; align-items:center; gap:4px">
-            Volver al inicio de sesión
-          </a>
+          @if (alert) {
+          <div
+            style="display:flex; align-items:flex-start; gap:9px; background:var(--ok-bg); border:1px solid var(--ok); border-radius:10px; padding:10px 12px; margin-bottom:16px; color:var(--ok); font-size:12.5px; font-weight:600; line-height:1.4"
+            role="status">
+            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            <span>{{ alert.message }}</span>
+          </div>
+          }
+
+          <input type="text" inputmode="numeric" maxlength="6" placeholder="______"
+            [(ngModel)]="recoveryCode" (input)="onRecoveryCodeInput()"
+            (keydown.enter)="verifyDummyRecoveryCode()" [attr.aria-invalid]="!!recoveryCodeError"
+            aria-label="Código de recuperación"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; font-size:26px; letter-spacing:14px; text-align:center; color:var(--text); font-family:'JetBrains Mono',monospace; margin-bottom:10px; outline:none" />
+
+          @if (recoveryCodeError) {
+          <div
+            style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--bad); margin-bottom:10px"
+            role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>{{ recoveryCodeError }}</span>
+          </div>
+          }
+
+          @if (recoveryCodeResent) {
+          <div
+            style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--ok); margin-bottom:10px"
+            role="status">
+            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            <span>Enviamos un nuevo código al correo registrado.</span>
+          </div>
+          }
+
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+            <span style="font-size:12.5px; color:var(--text-3)">¿No llegó?</span>
+            <button type="button" (click)="resendDummyRecoveryCode()"
+              style="padding:0; background:transparent; border:none; color:var(--primary); font-size:13px; font-weight:700; cursor:pointer">
+              Reenviar código
+            </button>
+          </div>
+          <button type="button" (click)="verifyDummyRecoveryCode()"
+            style="width:100%; background:var(--primary); color:var(--primary-contrast); border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(14,90,138,.28)">
+            Verificar código
+          </button>
         </div>
+        } @else if (recoveryStage === 'password') {
+        <div class="recovery-password-view">
+          <h2 style="font-size:24px; font-weight:800; margin:0 0 6px">Crea tu nueva clave</h2>
+          <p style="color:var(--text-3); font-size:14px; margin:0 0 22px">
+            Debe tener al menos 8 caracteres.
+          </p>
+
+          @if (alert) {
+          <div
+            style="display:flex; align-items:center; gap:9px; background:var(--ok-bg); border:1px solid var(--ok); border-radius:10px; padding:10px 12px; margin-bottom:16px; color:var(--ok); font-size:12.5px; font-weight:600"
+            role="status">
+            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            <span>{{ alert.message }}</span>
+          </div>
+          }
+
+          <label for="recovery-new-password"
+            style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">
+            Nueva clave
+          </label>
+          <input id="recovery-new-password" type="password" [(ngModel)]="recoveryNewPassword"
+            placeholder="Mínimo 8 caracteres"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text); margin-bottom:8px; outline:none" />
+          @if (recoveryNewPasswordError) {
+          <div
+            style="display:flex; align-items:center; gap:6px; color:var(--bad); font-size:12px; font-weight:600; margin-bottom:10px"
+            role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>{{ recoveryNewPasswordError }}</span>
+          </div>
+          }
+
+          <label for="recovery-confirm-password"
+            style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin:16px 0 7px">
+            Confirmar nueva clave
+          </label>
+          <input id="recovery-confirm-password" type="password" [(ngModel)]="recoveryConfirmPassword"
+            placeholder="Repite la clave" (keydown.enter)="saveDummyRecoveryPassword()"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 13px; font-size:14px; color:var(--text); margin-bottom:8px; outline:none" />
+          @if (recoveryConfirmPasswordError) {
+          <div
+            style="display:flex; align-items:center; gap:6px; color:var(--bad); font-size:12px; font-weight:600; margin-bottom:10px"
+            role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span>{{ recoveryConfirmPasswordError }}</span>
+          </div>
+          }
+
+          <div style="height:10px"></div>
+          <button type="button" (click)="saveDummyRecoveryPassword()"
+            style="width:100%; background:var(--primary); color:var(--primary-contrast); border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(14,90,138,.28)">
+            Guardar nueva clave
+          </button>
+        </div>
+        } @else {
+        <div class="registration-success" style="text-align:center">
+          <div
+            style="width:66px; height:66px; border-radius:50%; background:var(--ok-bg); border:2px solid var(--ok); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:30px; color:var(--ok); font-weight:800"
+            aria-hidden="true">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h2 style="font-size:24px; font-weight:800; margin:0 0 8px">Clave actualizada</h2>
+          <p style="color:var(--text-2); font-size:14px; margin:0 auto 22px; line-height:1.5; max-width:340px">
+            Tu clave se cambió correctamente. Ya puedes iniciar sesión con tu nueva clave.
+          </p>
+          <button type="button" (click)="goToLoginAfterRecovery()"
+            style="width:100%; background:var(--primary); color:var(--primary-contrast); border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(14,90,138,.28)">
+            Ir a iniciar sesión
+          </button>
+        </div>
+        }
       </div>
       }
 
