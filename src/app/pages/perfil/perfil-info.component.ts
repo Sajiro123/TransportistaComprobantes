@@ -5,7 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ApiAuthService } from '../../core/services/api-auth.service';
 import { ApiUsuarioService } from '../../core/services/api-usuario.service';
 import { ApiComprobanteService } from '../../core/services/api-comprobante.service';
-import { Usuario, PerfilTransportista } from '../../core/models/models';
+import { CuentaAbono, Usuario, PerfilTransportista } from '../../core/models/models';
 
 @Component({
   selector: 'app-perfil-info',
@@ -441,8 +441,8 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
             <!-- Cuenta de Abono -->
             <div
               class="group bg-white dark:bg-[#0D1117] border border-atu-border dark:border-[#30363D] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden relative"
-              [class.ring-2]="editMode"
-              [class.ring-atu-primary]="editMode"
+              [class.ring-2]="cuentaEditMode"
+              [class.ring-atu-primary]="cuentaEditMode"
             >
               <div class="absolute inset-0 bg-gradient-to-r from-atu-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               <div
@@ -458,12 +458,51 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                     Cuenta de abono
                   </div>
                 </div>
-                <!-- Badge de estado -->
-                <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold bg-green-100 dark:bg-[#102A1C] text-green-700 dark:text-[#3FC078] border border-green-200 dark:border-green-900/30"
-                >
-                  <i class="fa-solid fa-check-circle text-[11px]"></i> Registrada
-                </span>
+                <div class="flex items-center justify-end gap-2 flex-wrap">
+                  @if (isLoadingCuentaAbono) {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30">
+                      <i class="fa-solid fa-spinner fa-spin text-[11px]"></i> Consultando
+                    </span>
+                  } @else if (cuentaAbono) {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold bg-green-100 dark:bg-[#102A1C] text-green-700 dark:text-[#3FC078] border border-green-200 dark:border-green-900/30">
+                      <i class="fa-solid fa-check-circle text-[11px]"></i> Registrada
+                    </span>
+                  } @else if (cuentaAbonoLoaded) {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/30">
+                      <i class="fa-solid fa-circle-exclamation text-[11px]"></i> No registrada
+                    </span>
+                  }
+
+                  @if (!cuentaEditMode) {
+                    <button
+                      type="button"
+                      (click)="iniciarEdicionCuenta()"
+                      [disabled]="isLoadingCuentaAbono"
+                      class="ml-auto inline-flex items-center gap-2 bg-atu-surface-2 dark:bg-[#21262D] text-atu-text dark:text-[#E6EDF3] border border-atu-border dark:border-[#484F58] rounded-[9px] px-[15px] py-2.5 text-[13px] font-bold cursor-pointer hover:border-atu-primary dark:hover:border-[#00A3E0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <i class="fa-solid fa-building-columns text-xs"></i>
+                      Cambiar cuenta
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="guardarEdicionCuenta()"
+                      [disabled]="isSavingCuenta"
+                      class="inline-flex items-center gap-2 bg-atu-primary text-white border border-atu-primary rounded-[9px] px-3 py-2 text-[12.5px] font-bold cursor-pointer disabled:opacity-60"
+                    >
+                      <i class="fa-solid" [ngClass]="isSavingCuenta ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+                      {{ isSavingCuenta ? 'Guardando...' : 'Guardar cuenta' }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="cancelarEdicionCuenta()"
+                      [disabled]="isSavingCuenta"
+                      class="inline-flex items-center gap-2 bg-white dark:bg-[#161B22] text-atu-text-2 dark:text-[#8B949E] border border-atu-border dark:border-[#484F58] rounded-[9px] px-3 py-2 text-[12.5px] font-bold cursor-pointer disabled:opacity-60"
+                    >
+                      Cancelar
+                    </button>
+                  }
+                </div>
               </div>
 
               <div
@@ -475,11 +514,11 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                     class="text-atu-text-3 dark:text-[#6E7681] font-semibold uppercase tracking-wider block text-[10.5px]"
                   >
                     Banco
-                    @if (editMode) {
+                    @if (cuentaEditMode) {
                       <span class="text-red-600 dark:text-red-500 ml-0.5">*</span>
                     }
                   </span>
-                  @if (editMode) {
+                  @if (cuentaEditMode) {
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-building-columns text-gray-400 text-xs"></i>
@@ -489,11 +528,11 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                         class="w-full pl-9 border-2 border-atu-border dark:border-[#30363D] rounded-xl bg-white dark:bg-[#0D1117] px-3 py-2.5 text-[14px] text-atu-text dark:text-[#E6EDF3] focus:outline-none focus:border-atu-primary dark:focus:border-[#00A3E0] focus:ring-4 focus:ring-atu-primary/10 transition-all cursor-pointer shadow-sm appearance-none"
                       >
                         <option value="">Selecciona un banco…</option>
-                        <option value="bcp">BCP</option>
-                        <option value="bbva">BBVA</option>
-                        <option value="interbank">Interbank</option>
-                        <option value="scotiabank">Scotiabank</option>
-                        <option value="bn">Banco de la Nación</option>
+                        <option value="Banco de Crédito del Perú">Banco de Crédito del Perú</option>
+                        <option value="BBVA Perú">BBVA Perú</option>
+                        <option value="Interbank">Interbank</option>
+                        <option value="Scotiabank Perú">Scotiabank Perú</option>
+                        <option value="Banco de la Nación">Banco de la Nación</option>
                       </select>
                       <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
@@ -506,7 +545,7 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                       <div class="w-6 h-6 rounded-md bg-gray-100 dark:bg-[#21262D] flex items-center justify-center shrink-0">
                         <i class="fa-solid fa-building-columns text-gray-500 dark:text-[#8B949E] text-[10px]"></i>
                       </div>
-                      {{ usuario?.banco || '—' }}
+                      {{ cuentaAbono?.banco || '—' }}
                     </strong>
                   }
                 </div>
@@ -517,11 +556,11 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                     class="text-atu-text-3 dark:text-[#6E7681] font-semibold uppercase tracking-wider block text-[10.5px]"
                   >
                     Código de Cuenta Interbancario (CCI)
-                    @if (editMode) {
+                    @if (cuentaEditMode) {
                       <span class="text-red-600 dark:text-red-500 ml-0.5">*</span>
                     }
                   </span>
-                  @if (editMode) {
+                  @if (cuentaEditMode) {
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-money-check text-gray-400 text-xs"></i>
@@ -531,16 +570,22 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                         inputmode="numeric"
                         maxlength="20"
                         [(ngModel)]="editCci"
+                        (input)="onCciInput($event)"
                         placeholder="20 dígitos"
                         class="w-full pl-9 border-2 border-atu-border dark:border-[#30363D] rounded-xl bg-white dark:bg-[#0D1117] px-3 py-2.5 text-[14px] text-atu-text dark:text-[#E6EDF3] focus:outline-none focus:border-atu-primary dark:focus:border-[#00A3E0] focus:ring-4 focus:ring-atu-primary/10 transition-all font-mono tracking-widest shadow-sm"
                       />
                     </div>
+                    @if (editCci && editCci.length !== 20) {
+                      <p class="mt-1.5 text-[11.5px] font-semibold text-red-600 dark:text-red-400">
+                        El CCI debe contener exactamente 20 dígitos.
+                      </p>
+                    }
                   } @else {
                     <strong
                       class="text-[15px] text-atu-text dark:text-[#E6EDF3] font-semibold flex items-center gap-3 font-mono tracking-[0.2em]"
                     >
                       <i class="fa-solid fa-money-check text-gray-400 dark:text-[#8B949E]"></i>
-                      {{ usuario?.cci || '—' }}
+                      {{ cuentaAbono?.codigoCuentaInterbancario || '—' }}
                     </strong>
                   }
                 </div>
@@ -548,7 +593,7 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
 
               <!-- Mensajes Informativos (Dependiendo del banco seleccionado) -->
               @if (
-                usuario?.banco === 'Banco de la Nación' || editBanco === 'bn'
+                bancoCuentaVisible === 'Banco de la Nación'
               ) {
                 <div
                   class="mx-5 mb-5 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 rounded-r-xl p-4 transition-all"
@@ -575,10 +620,7 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                   </p>
                 </div>
               } @else if (
-                (usuario?.banco &&
-                  usuario?.banco !== 'Banco de la Nación' &&
-                  usuario?.banco !== '—') ||
-                (editBanco && editBanco !== 'bn' && editBanco !== '')
+                bancoCuentaVisible && bancoCuentaVisible !== 'Banco de la Nación'
               ) {
                 <div
                   class="mx-5 mb-5 bg-green-50 dark:bg-green-950/20 border-l-4 border-green-500 rounded-r-xl p-4 transition-all"
@@ -600,6 +642,18 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
                     Al no ser del Banco de la Nación, tu subsidio no puede ser
                     retenido ni embargado.
                   </p>
+                </div>
+              }
+
+              @if (cuentaAlert) {
+                <div
+                  class="mx-5 mb-5 flex items-center gap-2.5 p-3 rounded-[10px] text-[13px] font-semibold border"
+                  [ngClass]="cuentaAlert.type === 'error'
+                    ? 'bg-red-50 text-red-600 dark:bg-[rgba(239,68,68,0.1)] dark:text-red-400 border-red-100 dark:border-red-900/50'
+                    : 'bg-green-50 text-green-600 dark:bg-[rgba(34,197,94,0.1)] dark:text-green-400 border-green-100 dark:border-green-900/50'"
+                >
+                  <i class="fa-solid" [ngClass]="cuentaAlert.type === 'error' ? 'fa-triangle-exclamation' : 'fa-check'"></i>
+                  {{ cuentaAlert.message }}
                 </div>
               }
             </div>
@@ -727,6 +781,12 @@ import { Usuario, PerfilTransportista } from '../../core/models/models';
 export class PerfilInfoComponent implements OnInit {
   usuario: Usuario | null = null;
   perfilTrans: PerfilTransportista | null = null;
+  cuentaAbono: CuentaAbono | null = null;
+  isLoadingCuentaAbono = false;
+  cuentaAbonoLoaded = false;
+  cuentaEditMode = false;
+  isSavingCuenta = false;
+  cuentaAlert: { message: string; type: 'error' | 'success' } | null = null;
 
   // Password change
   passActual = '';
@@ -759,6 +819,7 @@ export class PerfilInfoComponent implements OnInit {
   ngOnInit(): void {
     this.usuario = this.resolveSession();
     this.cargarPerfilComprobante();
+    this.cargarCuentaAbono();
   }
 
   private resolveSession(): Usuario | null {
@@ -781,6 +842,30 @@ export class PerfilInfoComponent implements OnInit {
     });
   }
 
+  cargarCuentaAbono(): void {
+    const ruc = this.usuario?.numDocumento || '20512345678';
+    this.isLoadingCuentaAbono = true;
+
+    this.apiComprobanteService.obtenerCuentaAbono(ruc).subscribe({
+      next: (res) => {
+        this.cuentaAbono = res.data.lista;
+        this.isLoadingCuentaAbono = false;
+        this.cuentaAbonoLoaded = true;
+
+        if (this.usuario) {
+          this.usuario.banco = this.cuentaAbono?.banco ?? '';
+          this.usuario.cci = this.cuentaAbono?.codigoCuentaInterbancario ?? '';
+        }
+      },
+      error: (err) => {
+        this.isLoadingCuentaAbono = false;
+        this.cuentaAbonoLoaded = true;
+        this.cuentaAbono = null;
+        console.error('Error al cargar la cuenta de abono:', err);
+      },
+    });
+  }
+
   get avatarLetter(): string {
     return this.usuario?.nombre?.charAt(0).toUpperCase() ?? 'U';
   }
@@ -796,8 +881,6 @@ export class PerfilInfoComponent implements OnInit {
     this.editEmail = this.usuario?.email ?? '';
     this.editTelefono = this.usuario?.telefono ?? '';
     this.editCargo = this.usuario?.cargo ?? '';
-    this.editBanco = this.usuario?.banco ?? '';
-    this.editCci = this.usuario?.cci ?? '';
 
     // Bind contact edit fields
     this.editContactoNombre = this.perfilTrans?.contacto?.nombresApellidos ?? '';
@@ -814,6 +897,94 @@ export class PerfilInfoComponent implements OnInit {
     this.editAlert = null;
   }
 
+  onCciInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const numericValue = input.value.replace(/\D/g, '').slice(0, 20);
+    input.value = numericValue;
+    this.editCci = numericValue;
+  }
+
+  get bancoCuentaVisible(): string {
+    return this.cuentaEditMode ? this.editBanco : (this.cuentaAbono?.banco ?? '');
+  }
+
+  iniciarEdicionCuenta(): void {
+    this.editBanco = this.cuentaAbono?.banco ?? '';
+    this.editCci = this.cuentaAbono?.codigoCuentaInterbancario ?? '';
+    this.cuentaAlert = null;
+    this.cuentaEditMode = true;
+  }
+
+  cancelarEdicionCuenta(): void {
+    if (this.isSavingCuenta) return;
+    this.cuentaEditMode = false;
+    this.editBanco = '';
+    this.editCci = '';
+    this.cuentaAlert = null;
+  }
+
+  guardarEdicionCuenta(): void {
+    this.editBanco = String(this.editBanco ?? '').trim();
+    this.editCci = String(this.editCci ?? '').trim();
+    this.cuentaAlert = null;
+
+    if (!this.editBanco) {
+      this.cuentaAlert = {
+        message: 'Seleccione el banco de la cuenta de abono.',
+        type: 'error',
+      };
+      return;
+    }
+
+    if (!/^\d{20}$/.test(this.editCci)) {
+      this.cuentaAlert = {
+        message: 'El CCI debe contener exactamente 20 dígitos.',
+        type: 'error',
+      };
+      return;
+    }
+
+    const ruc =
+      this.perfilTrans?.datosEmpresa.ruc ||
+      this.usuario?.numDocumento ||
+      '20512345678';
+
+    this.isSavingCuenta = true;
+    this.apiComprobanteService.guardarCuentaAbono(ruc, {
+      banco: this.editBanco,
+      codigoCuentaInterbancario: this.editCci,
+    }).subscribe({
+      next: (response) => {
+        this.isSavingCuenta = false;
+        this.cuentaAbono = response.data.lista;
+        this.cuentaAbonoLoaded = true;
+        this.cuentaEditMode = false;
+
+        if (this.usuario) {
+          this.usuario.banco = response.data.lista.banco;
+          this.usuario.cci = response.data.lista.codigoCuentaInterbancario;
+        }
+
+        this.cuentaAlert = {
+          message: response.data.mensaje || 'Cuenta de abono guardada correctamente.',
+          type: 'success',
+        };
+        setTimeout(() => (this.cuentaAlert = null), 4000);
+      },
+      error: (error) => {
+        this.isSavingCuenta = false;
+        this.cuentaAlert = {
+          message:
+            error?.error?.data?.mensaje ||
+            error?.error?.mensaje ||
+            error?.message ||
+            'No fue posible guardar la cuenta de abono.',
+          type: 'error',
+        };
+      },
+    });
+  }
+
   guardarEdicion(): void {
     this.editAlert = null;
     if (!this.usuario) return;
@@ -822,9 +993,6 @@ export class PerfilInfoComponent implements OnInit {
     this.editEmail = String(this.editEmail ?? '').trim();
     this.editTelefono = String(this.editTelefono ?? '').trim();
     this.editCargo = String(this.editCargo ?? '').trim();
-    this.editBanco = String(this.editBanco ?? '').trim();
-    this.editCci = String(this.editCci ?? '').trim();
-
     this.editContactoNombre = String(this.editContactoNombre ?? '').trim();
     this.editContactoTipoDoc = String(this.editContactoTipoDoc ?? '').trim();
     this.editContactoNumDoc = String(this.editContactoNumDoc ?? '').trim();
@@ -850,29 +1018,21 @@ export class PerfilInfoComponent implements OnInit {
       this.isSaving = true;
       const ruc = this.perfilTrans.datosEmpresa.ruc;
 
-      this.apiComprobanteService.actualizarContacto({
-        ruc,
-        nombresApellidos: this.editContactoNombre,
-        tipoDocumento: this.editContactoTipoDoc,
-        numeroDocumento: this.editContactoNumDoc,
-        telefono: this.editContactoTelefono
-      }).subscribe({
-        next: (res) => {
+      this.apiComprobanteService.actualizarContacto(ruc, {
+          nombresApellidos: this.editContactoNombre,
+          tipoDocumento: this.editContactoTipoDoc,
+          numeroDocumento: this.editContactoNumDoc,
+          telefono: this.editContactoTelefono,
+        }).subscribe({
+        next: (contacto) => {
           this.isSaving = false;
           if (this.perfilTrans) {
-            this.perfilTrans.contacto.nombresApellidos = this.editContactoNombre;
-            this.perfilTrans.contacto.tipoDocumento = this.editContactoTipoDoc;
-            this.perfilTrans.contacto.numeroDocumento = this.editContactoNumDoc;
-            this.perfilTrans.contacto.telefono = this.editContactoTelefono;
+            this.perfilTrans.contacto = contacto.data.lista;
           }
-
-          // Simular el guardado de banco y cci localmente
-          this.usuario!.banco = this.editBanco;
-          this.usuario!.cci = this.editCci;
 
           this.editMode = false;
           this.editAlert = {
-            message: res.mensaje || 'Perfil de transportista actualizado correctamente.',
+            message: contacto.data.mensaje || 'Datos de contacto actualizados correctamente.',
             type: 'success',
           };
           setTimeout(() => (this.editAlert = null), 4000);
@@ -880,7 +1040,11 @@ export class PerfilInfoComponent implements OnInit {
         error: (err) => {
           this.isSaving = false;
           this.editAlert = {
-            message: err?.error?.mensaje || err?.message || 'Error al guardar los datos de contacto.',
+            message:
+              err?.error?.data?.mensaje ||
+              err?.error?.mensaje ||
+              err?.message ||
+              'Error al guardar los datos de contacto.',
             type: 'error',
           };
         }

@@ -16,6 +16,11 @@
   // window.__env.API_VALIDACION_URL = 'https://apidev.atu.gob.pe/api-subsidio/api_validacion';
   window.__env.API_VALIDACION_URL = 'http://localhost:8081/api_validacion';
 
+  // URL base del API de Comprobantes y modo mock temporal
+  // window.__env.API_COMPROBANTE_URL = 'https://apidev.atu.gob.pe/api-subsidio/api_comprobante';
+  window.__env.API_COMPROBANTE_URL = 'http://localhost:8082/api_comprobante';
+  window.__env.API_COMPROBANTE_MOCK = true;
+
   // Google reCAPTCHA v3 Site Key
   window.__env.RECAPTCHA_SITE_KEY = '6Ldu6FUrAAAAADnOURKYc9E_uUbGBRC35_ntvznt';
 

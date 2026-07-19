@@ -23,6 +23,12 @@ export const environment = {
     (window as any).__env?.API_COMPROBANTE_URL ||
     'http://localhost:8082/api_comprobante',
 
+  /** Usa respuestas locales hasta que api_comprobante esté disponible. */
+  API_COMPROBANTE_MOCK:
+    (window as any).__env?.API_COMPROBANTE_MOCK !== undefined
+      ? String((window as any).__env.API_COMPROBANTE_MOCK).toLowerCase() === 'true'
+      : true,
+
   /** Clave privada para descifrado de campos sensibles (IAM) */
   ENCRYPTION_PRIVATE_KEY: (window as any).__env?.ENCRYPTION_PRIVATE_KEY || '',
 };

@@ -27,6 +27,11 @@ export const environment = {
     (window as any).__env?.API_COMPROBANTE_URL ||
     'https://apidev.atu.gob.pe/api_comprobante',
 
+  /** En producción usa el backend, salvo que se habilite explícitamente el mock. */
+  API_COMPROBANTE_MOCK:
+    String((window as any).__env?.API_COMPROBANTE_MOCK ?? false).toLowerCase() ===
+    'true',
+
   /** Clave privada para descifrado de campos sensibles (IAM) */
   ENCRYPTION_PRIVATE_KEY:
     (window as any).__env?.ENCRYPTION_PRIVATE_KEY ||

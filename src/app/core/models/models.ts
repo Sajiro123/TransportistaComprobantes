@@ -115,3 +115,140 @@ export interface PerfilTransportistaResponse {
     mensaje: string;
   };
 }
+
+export interface ActualizarContactoRequest {
+  nombresApellidos: string;
+  tipoDocumento?: string;
+  numeroDocumento?: string;
+  telefono: string;
+}
+
+export interface ActualizarContactoResponse {
+  data: {
+    lista: ContactoTransportista;
+    respuesta: string;
+    mensaje: string;
+  };
+}
+
+export interface CuentaAbono {
+  banco: string;
+  codigoCuentaInterbancario: string;
+}
+
+export interface CuentaAbonoResponse {
+  data: {
+    lista: CuentaAbono | null;
+    respuesta: string;
+    mensaje: string;
+  };
+}
+
+export interface GuardarCuentaAbonoRequest {
+  banco: string;
+  codigoCuentaInterbancario: string;
+}
+
+export interface GuardarCuentaAbonoResponse {
+  data: {
+    lista: CuentaAbono;
+    respuesta: string;
+    mensaje: string;
+  };
+}
+
+export type EstadoValidacionVehiculo =
+  | 'VALIDADO'
+  | 'EN_REVISION'
+  | 'RECHAZADO';
+
+export interface PropietarioVehiculo {
+  tipoDocumento: string;
+  numeroDocumento: string;
+  nombre: string;
+}
+
+export interface ValidacionVehiculo {
+  campo: string;
+  estado: EstadoValidacionVehiculo;
+  entidadValidadora: string;
+}
+
+export interface VehiculoTransportista {
+  id: number;
+  placa: string;
+  categoria: string;
+  topeGalones: number;
+  numeroAutorizacion: string;
+  entidadAutorizadora: string | null;
+  tuc: string;
+  tucVencida: boolean;
+  estadoValidacion: EstadoValidacionVehiculo;
+  propietario: PropietarioVehiculo;
+  validaciones: ValidacionVehiculo[];
+}
+
+export interface VehiculosFiltros {
+  ruc: string;
+  busqueda?: string;
+  categoria?: string;
+  estado?: EstadoValidacionVehiculo | '';
+}
+
+export interface VehiculosResponse {
+  data: {
+    lista: VehiculoTransportista[];
+    respuesta: string;
+    mensaje: string;
+  };
+}
+
+export interface VehiculoDetalleResponse {
+  data: {
+    lista: VehiculoTransportista;
+    respuesta: string;
+    mensaje: string;
+  };
+}
+
+export interface VehiculoNoEncontrado {
+  data: {
+    lista: {
+      code: 'VEH_004';
+      message: string;
+      descripcion: string;
+    };
+    respuesta: 'ERROR';
+    mensaje: string;
+  };
+}
+
+export interface RegistrarVehiculoRequest {
+  placa: string;
+  categoria: string;
+  topeGalones: number;
+  numeroAutorizacion: string;
+  tuc: string;
+  propietarioTipoDocumento?: string;
+  propietarioNumeroDocumento: string;
+  propietarioNombre?: string;
+}
+
+export interface RegistrarVehiculoResponse {
+  data: {
+    lista: VehiculoTransportista;
+    respuesta: string;
+    mensaje: string;
+  };
+}
+
+export type ActualizarVehiculoRequest = RegistrarVehiculoRequest;
+export type ActualizarVehiculoResponse = RegistrarVehiculoResponse;
+
+export interface EliminarVehiculoResponse {
+  data: {
+    lista: null;
+    respuesta: 'OK';
+    mensaje: string;
+  };
+}

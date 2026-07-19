@@ -1,6 +1,11 @@
 // Variables and custom styles for the table
 
 ::ng-deep .vehiculos-table {
+  .p-datatable-table-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
   .p-datatable-thead > tr > th {
     background-color: var(--surface-2);
     border-bottom: 1px solid var(--border);
@@ -10,6 +15,38 @@
     text-transform: uppercase;
     letter-spacing: .5px;
     padding: 13px 18px;
+  }
+
+  .p-datatable-thead > tr:first-child > th.table-group-header {
+    padding-top: 10px;
+    padding-bottom: 8px;
+    color: var(--text-2);
+    border-right: 1px solid var(--border);
+  }
+
+  .p-datatable-thead > tr:first-child > th.table-group-header:last-child {
+    border-right: none;
+  }
+
+  .p-datatable-sortable-column {
+    transition: background-color .18s ease, color .18s ease;
+
+    &:hover,
+    &.p-datatable-column-sorted {
+      background-color: var(--primary-soft);
+      color: var(--primary);
+    }
+  }
+
+  .sortable-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .p-datatable-sort-icon {
+    width: 12px;
+    height: 12px;
   }
   
   .p-datatable-tbody > tr {
@@ -29,5 +66,55 @@
     > td {
       padding: 0;
     }
+  }
+
+  .p-paginator {
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+  }
+
+  .p-paginator-current {
+    margin-right: auto;
+    font-size: 12.5px;
+    color: var(--text-3);
+  }
+
+  .p-paginator-page,
+  .p-paginator-first,
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-last {
+    min-width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    color: var(--text-2);
+  }
+
+  .p-paginator-page.p-paginator-page-selected {
+    background: var(--primary);
+    color: var(--primary-contrast);
+  }
+
+  .p-paginator-rpp-dropdown {
+    min-width: 70px;
+    height: 34px;
+    border-color: var(--border);
+    background: var(--surface-2);
+  }
+}
+
+@media (max-width: 640px) {
+  ::ng-deep .vehiculos-table .p-paginator {
+    justify-content: center;
+  }
+
+  ::ng-deep .vehiculos-table .p-paginator-current {
+    flex-basis: 100%;
+    margin: 0 0 4px;
+    text-align: center;
   }
 }

@@ -167,35 +167,13 @@
         </div>
         }
 
-        <!-- Demo access hint -->
-        <!-- <div
+        <!-- Acceso mock temporal mientras los servicios no están disponibles -->
+        <div
           style="margin-bottom:16px; padding:10px 12px; border-radius:10px; background:var(--surface-2); border:1px solid var(--border); font-size:12px; color:var(--text-2); line-height:1.4">
-          💡 Acceso de prueba:<br>
-          Usuario: <code
-            style="font-family:monospace; font-weight:700; color:var(--primary)">demo&#64;region.gob.pe</code><br>
+          Acceso temporal de prueba:<br>
+          RUC: <code
+            style="font-family:monospace; font-weight:700; color:var(--primary)">20512345678</code><br>
           Clave: <code style="font-family:monospace; font-weight:700; color:var(--primary)">demo123</code>
-        </div> -->
-
-        <label
-          style="display:block; font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:7px">Tipo de
-          documento</label>
-        <div style="display:flex; gap:8px; margin-bottom:16px">
-          <button type="button" (click)="selectLoginDocumentType('RUC')"
-            [attr.aria-pressed]="loginDocumentType === 'RUC'"
-            style="flex:1; padding:11px; border-radius:10px; border:1.5px solid; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s"
-            [style.border-color]="loginDocumentType === 'RUC' ? 'var(--primary)' : 'var(--border)'"
-            [style.background]="loginDocumentType === 'RUC' ? 'var(--primary-soft)' : 'var(--surface)'"
-            [style.color]="loginDocumentType === 'RUC' ? 'var(--primary)' : 'var(--text-2)'">
-            RUC
-          </button>
-          <button type="button" (click)="selectLoginDocumentType('DNI')"
-            [attr.aria-pressed]="loginDocumentType === 'DNI'"
-            style="flex:1; padding:11px; border-radius:10px; border:1.5px solid; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s"
-            [style.border-color]="loginDocumentType === 'DNI' ? 'var(--primary)' : 'var(--border)'"
-            [style.background]="loginDocumentType === 'DNI' ? 'var(--primary-soft)' : 'var(--surface)'"
-            [style.color]="loginDocumentType === 'DNI' ? 'var(--primary)' : 'var(--text-2)'">
-            DNI
-          </button>
         </div>
 
         <label for="login-document"
@@ -203,12 +181,12 @@
           {{ loginDocumentLabel }}
         </label>
         <div style="margin-bottom:16px">
-          <input id="login-document" type="text" inputmode="numeric" autocomplete="username"
+          <input id="login-document" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="username"
             class="w-full px-4 py-3 text-sm text-gray-900 bg-white border border-gray-300 rounded-xl outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-gray-400"
             [(ngModel)]="loginEmail" [attr.maxlength]="loginDocumentMaxLength"
             [placeholder]="loginDocumentPlaceholder" [attr.aria-invalid]="!!loginDocumentError"
-            (input)="onLoginDocumentInput()" (blur)="loginDocumentTouched = true"
-            (keydown)="onLoginKeydown($event)" />
+            (input)="onLoginDocumentInput($event)" (blur)="loginDocumentTouched = true"
+            (keydown)="onLoginDocumentKeydown($event)" />
           @if (loginDocumentError) {
           <p style="margin:5px 2px 0; color:var(--bad); font-size:11.5px; font-weight:600; line-height:1.35">
             {{ loginDocumentError }}

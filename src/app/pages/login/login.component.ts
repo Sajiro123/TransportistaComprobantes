@@ -10,7 +10,7 @@ import {
 } from '../../core/services/auth.service';
 import { ApiAuthService } from '../../core/services/api-auth.service';
 import { SessionService } from '../../core/services/session.service';
-import { ApiErrorResponse, EnviarOtpRegistroRequest } from '../../core/models/api.models';
+import { ApiErrorResponse, EnviarOtpRegistroRequest, LoginResponse } from '../../core/models/api.models';
 import { ThemeService } from '../../core/services/theme.service';
 import Swal from 'sweetalert2';
 import { isValidRuc, isValidEmail, isValidPhone } from '../../core/utils/validators';
@@ -69,51 +69,54 @@ export class LoginComponent implements OnInit, OnDestroy {
   // ── Login form ────────────────────────────────────────
   loginEmail = '';
   loginPassword = '';
-  loginDocumentType: 'RUC' | 'DNI' = 'RUC';
   loginDocumentTouched = false;
+  private readonly mockRuc = '20512345678';
+  private readonly mockPassword = 'demo123';
 
   get loginDocumentLabel(): string {
-    return `Número de ${this.loginDocumentType}`;
+    return 'Número de RUC';
   }
 
   get loginDocumentPlaceholder(): string {
-    return this.loginDocumentType === 'RUC'
-      ? 'Ingrese su número de RUC'
-      : 'Ingrese su número de DNI';
+    return 'Ingrese su número de RUC';
   }
 
   get loginDocumentMaxLength(): number {
-    return this.loginDocumentType === 'RUC' ? 11 : 8;
+    return 11;
   }
 
   get loginDocumentError(): string {
     if (!this.loginDocumentTouched) return '';
-    if (!this.loginEmail) return `Ingrese su número de ${this.loginDocumentType}.`;
+    if (!this.loginEmail) return 'Ingrese su número de RUC.';
+    return isValidRuc(this.loginEmail)
+      ? ''
+      : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
+  }
 
-    if (this.loginDocumentType === 'RUC') {
-      return isValidRuc(this.loginEmail)
-        ? ''
-        : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
+  onLoginDocumentInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const numericValue = input.value.replace(/\D/g, '').slice(0, 11);
+    input.value = numericValue;
+    this.loginEmail = numericValue;
+    this.loginDocumentTouched = true;
+  }
+
+  onLoginDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      this.onLoginKeydown(event);
+      return;
     }
 
-    return /^\d{8}$/.test(this.loginEmail)
-      ? ''
-      : 'El DNI debe tener exactamente 8 dígitos.';
-  }
+    const allowedKeys = [
+      'Backspace', 'Delete', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight',
+      'Home', 'End',
+    ];
+    const isShortcut = (event.ctrlKey || event.metaKey) &&
+      ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase());
 
-  selectLoginDocumentType(type: 'RUC' | 'DNI'): void {
-    if (this.loginDocumentType === type) return;
-    this.loginDocumentType = type;
-    this.loginEmail = '';
-    this.loginDocumentTouched = false;
-    this.clearAlert();
-  }
-
-  onLoginDocumentInput(): void {
-    this.loginEmail = this.loginEmail
-      .replace(/\D/g, '')
-      .slice(0, this.loginDocumentMaxLength);
-    this.loginDocumentTouched = true;
+    if (!/^\d$/.test(event.key) && !allowedKeys.includes(event.key) && !isShortcut) {
+      event.preventDefault();
+    }
   }
 
   // ── Registration flow (conectado al backend real) ──
@@ -443,7 +446,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     const registeredRuc = this.registrationRuc;
     this.changeRegistrationRuc();
     this.showForm('login');
-    this.loginDocumentType = 'RUC';
     this.loginEmail = registeredRuc;
     this.loginDocumentTouched = false;
   }
@@ -778,6 +780,11 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (usuario === this.mockRuc && password === this.mockPassword) {
+      this.loginWithMockData();
+      return;
+    }
+
     this.isLoading = true;
 
     if (typeof grecaptcha !== 'undefined') {
@@ -824,6 +831,39 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.showAlert(msg, 'error');
       },
     });
+  }
+
+  /**
+   * Acceso temporal para desarrollo mientras el servicio IAM no está disponible.
+   * TODO: retirar este método y el aviso visual cuando se habilite el backend.
+   */
+  private loginWithMockData(): void {
+    this.isLoading = true;
+
+    const mockResponse: LoginResponse = {
+      data: {
+        usuarioId: 1,
+        nombrePersona: 'Usuario',
+        apellidoPaterno: 'Mock',
+        apellidoMaterno: null,
+        razonSocial: 'Transportes Demo S.A.C.',
+        nombreEntidad: 'Autoridad de Transporte Urbano para Lima y Callao',
+        cargo: 'Representante del transportista',
+        correo: 'usuario.mock@atu.gob.pe',
+        entidadUuid: 'entidad-mock-atu',
+        numeroDocumento: this.mockRuc,
+        perfilCodigo: 'TRANSPORTISTA',
+        perfilNombre: 'Transportista',
+        telefono: '999999999',
+        tipoDocumento: 'RUC',
+        tipoEntidad: 'ATU',
+        usuarioUuid: 'usuario-mock-transportista',
+      },
+    };
+
+    this.apiAuthService.saveSession(mockResponse);
+    this.sessionService.startSession();
+    this.router.navigate(['/perfil']);
   }
 
   onLoginKeydown(e: KeyboardEvent): void {
@@ -956,7 +996,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   goToLoginAfterRecovery(): void {
     const recoveredRuc = this.recRuc;
     this.showForm('login');
-    this.loginDocumentType = 'RUC';
     this.loginEmail = recoveredRuc;
     this.loginPassword = '';
     this.loginDocumentTouched = false;
