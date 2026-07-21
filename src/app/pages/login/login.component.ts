@@ -54,9 +54,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   // ── reCAPTCHA ─────────────────────────────────────────
-  recaptchaSiteKey =
-    (window as any).__env?.RECAPTCHA_SITE_KEY ||
-    '6Ldu6FUrAAAAADnOURKYc9E_uUbGBRC35_ntvznt';
+  recaptchaSiteKey = environment.RECAPTCHA_SITE_KEY;
 
   // ── Slider state ──────────────────────────────────────
   sliderImages = ['images/CARGAPESADA1.jpeg', 'images/CARGAPESADA2.jpeg'];

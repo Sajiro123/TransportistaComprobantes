@@ -1,0 +1,370 @@
+<div class="comprobantes-page">
+  <div class="grid gap-3 md:grid-cols-2 mb-[18px]">
+    <div class="flex items-center gap-2.5 rounded-xl border border-[var(--warn)] bg-[var(--warn-bg)] px-3.5 py-2.5">
+      <i class="fa-regular fa-clock text-[var(--warn)]"></i>
+      <span class="text-[13px] font-semibold text-[var(--warn)]">Plazo de compra: 29/05/2026 – 28/07/2026</span>
+      <span class="ml-auto whitespace-nowrap rounded-full bg-[var(--warn)] px-2.5 py-0.5 text-xs font-bold text-white">9 días</span>
+    </div>
+    <div class="flex items-center gap-2.5 rounded-xl border border-[var(--primary)] bg-[var(--primary-soft)] px-3.5 py-2.5">
+      <i class="fa-solid fa-circle-info text-[var(--primary)]"></i>
+      <span class="text-[12.5px] font-medium leading-snug text-[var(--primary)]">El beneficiario es el <b>transportista titular de la autorización</b>, no el dueño del vehículo.</span>
+    </div>
+  </div>
+
+  <section class="animate-entry">
+    <header class="mb-3.5">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="rounded-md bg-[var(--primary)] px-2.5 py-[3px] text-[10.5px] font-extrabold uppercase tracking-wide text-[var(--primary-contrast)]">Sección 2 · Carga y cálculo</span>
+        <span class="text-[10.5px] font-bold uppercase tracking-wide text-[var(--text-3)]">Hoja 1 de 3</span>
+      </div>
+      <h1 class="mt-1 text-2xl font-extrabold text-[var(--text)]">Comprobantes</h1>
+      <p class="mt-1.5 text-[13.5px] text-[var(--text-3)]">Regístralos en la forma que corresponda — puedes cargar varios en cada una.</p>
+    </header>
+
+    <div class="mb-4 flex gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-1">
+      <button type="button" class="tab-button" [class.tab-button--active]="forma === 'A'" (click)="forma = 'A'">Forma A · Surtido directo</button>
+      <button type="button" class="tab-button" [class.tab-button--active]="forma === 'B'" (click)="forma = 'B'">Forma B · Consumidor directo</button>
+    </div>
+
+    @if (forma === 'A') {
+    <div class="mb-3.5 flex flex-wrap items-end justify-between gap-3.5">
+      <p class="min-w-[240px] flex-1 max-w-[620px] text-[13.5px] leading-relaxed text-[var(--text-2)]">
+        Registra tus facturas de compra <b>con placa</b> — una por una o varias por Excel. Cada comprobante se valida en SUNAT y Osinergmin. Si una factura tiene una nota de crédito activa, queda <b>inhabilitada</b>.
+      </p>
+      <div class="flex flex-wrap gap-2.5">
+        <button type="button" class="action-button action-button--secondary">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i> Cargar Excel
+        </button>
+        <button type="button" class="action-button action-button--primary" (click)="abrirRegistro()">
+          <i class="fa-solid fa-plus"></i> Agregar comprobante
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-3 flex items-center gap-2 px-0.5">
+      <span class="text-[11.5px] font-bold uppercase tracking-wide text-[var(--text-3)]">Comprobantes registrados</span>
+      <span class="rounded-full bg-[var(--surface-3)] px-2.5 py-0.5 text-xs font-extrabold text-[var(--text-2)]">{{ comprobantes.length }}</span>
+    </div>
+
+    <div class="mb-3.5 flex flex-wrap items-center gap-2.5">
+      <label class="relative min-w-[220px] flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-3)]"></i>
+        <input [(ngModel)]="busqueda" type="search" placeholder="Buscar por placa, combustible, factura o grifo…" class="filter-control w-full pl-9" />
+      </label>
+      <select [(ngModel)]="estadoFiltro" class="filter-control cursor-pointer font-semibold">
+        <option value="todos">Todos los estados</option>
+        <option value="val">Conformes</option>
+        <option value="pend">En validación</option>
+        <option value="obs">Observados / inhabilitados</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="overflow-x-auto">
+        <table class="comprobantes-table">
+          <thead>
+            <tr>
+              <th>Comprobante</th>
+              <th>Placa · conductor</th>
+              <th>Grifo · ubicación</th>
+              <th>Combustible</th>
+              <th>Galones</th>
+              <th>Estado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of comprobantesFiltrados; track item.id) {
+              <tr>
+                <td><b class="mono">{{ item.numero }}</b><small>{{ item.fecha }}</small></td>
+                <td><b class="mono text-[13.5px]">{{ item.placa }}</b><small>{{ item.conductor }}</small></td>
+                <td><b>{{ item.grifo }}</b><small>{{ item.ubicacion }}</small></td>
+                <td><span class="fuel-badge">{{ item.combustible }}</span> <small class="mono inline">{{ item.ppm }} ppm</small></td>
+                <td class="mono">{{ item.galones | number:'1.2-2' }}</td>
+                <td>
+                  <span class="status-badge" [class.status-badge--ok]="item.estado === 'val'" [class.status-badge--pending]="item.estado === 'pend'" [class.status-badge--bad]="item.estado === 'obs'">
+                    <i class="fa-solid" [class]="item.estadoIcon"></i>{{ item.estadoLabel }}
+                  </span>
+                </td>
+                <td>
+                  <div class="flex justify-end gap-1.5">
+                    <button type="button" class="icon-button" title="Editar" aria-label="Editar comprobante" (click)="abrirEditor(item)"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="icon-button icon-button--danger" title="Retirar" aria-label="Retirar comprobante" (click)="retirar(item.id)"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="!py-10 text-center text-[var(--text-3)]"><b class="block text-[var(--text-2)]">Sin resultados</b>No hay comprobantes que coincidan con los filtros.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mb-2.5 mt-5 px-0.5 text-[11.5px] font-bold uppercase tracking-wide text-[var(--text-3)]">Acumulado por vehículo</div>
+    <div class="flex flex-col gap-2.5">
+      @for (item of acumulados; track item.placa) {
+        <article class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-[var(--shadow)]">
+          <div class="mb-1.5 flex justify-between gap-3 text-[13.5px] font-bold">
+            <span class="mono">{{ item.placa }}</span>
+            <span class="mono text-[var(--text-2)]">{{ item.consumido | number:'1.2-2' }} / {{ item.tope | number:'1.2-2' }} gal</span>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-[var(--surface-3)]">
+            <div class="h-full rounded-full bg-[var(--ok)] transition-all duration-500" [style.width.%]="porcentaje(item)"></div>
+          </div>
+        </article>
+      }
+    </div>
+    } @else {
+    <div class="forma-b-content">
+      <p class="mb-3.5 text-sm leading-relaxed text-[var(--text-2)]">
+        Tú, el transportista, registras tus compras al mayorista (sin placa) y, por separado, qué vehículos abastece ese combustible. <b>El proveedor nunca registra por ti.</b>
+      </p>
+
+      <div class="section-label">(i) Compras al distribuidor mayorista</div>
+      <div class="flex flex-col gap-3">
+        @for (compra of comprasMayorista; track compra.id) {
+          <article class="rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-[15px] shadow-[var(--shadow)]">
+            <div class="flex flex-wrap items-start justify-between gap-2.5">
+              <div>
+                <div class="text-[15px] font-extrabold text-[var(--text)]">Factura <span class="mono">{{ compra.numero }}</span></div>
+                <div class="mt-0.5 text-[12.5px] text-[var(--text-3)]">{{ compra.distribuidor }} · RUC <span class="mono">{{ compra.ruc }}</span></div>
+              </div>
+              <span class="status-badge status-badge--ok !px-[11px] !py-[5px] !text-xs">
+                <i class="fa-solid fa-check"></i> Conforme
+              </span>
+            </div>
+
+            <div class="mt-3 flex flex-wrap gap-x-6 gap-y-3">
+              <div>
+                <div class="meta-label">Sin placa</div>
+                <div class="meta-value text-[var(--text-3)]">— (a granel)</div>
+              </div>
+              <div>
+                <div class="meta-label">Combustible</div>
+                <div class="meta-value">{{ compra.combustible }} · {{ compra.ppm }} ppm</div>
+              </div>
+              <div>
+                <div class="meta-label">Galones</div>
+                <div class="meta-value mono">{{ compra.galones | number:'1.2-2' }}</div>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      <button type="button" class="mt-3 w-full rounded-[10px] border border-dashed border-[var(--primary)] bg-[var(--surface)] p-[13px] text-sm font-bold text-[var(--primary)] transition-colors hover:bg-[var(--primary-soft)]">
+        <i class="fa-solid fa-plus mr-1"></i> Registrar compra a granel
+      </button>
+
+      <div class="section-label !mt-[22px]">(ii) Vehículos que abastece este combustible</div>
+      <div class="overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow)]">
+        @for (vehiculo of vehiculosAbastecidos; track vehiculo.placa; let last = $last) {
+          <div class="flex items-center gap-2.5 px-[15px] py-3" [class.border-b]="!last" [class.border-[var(--border)]]="!last">
+            <span class="mono text-sm font-bold text-[var(--text)]">{{ vehiculo.placa }}</span>
+            <span class="ml-auto rounded-full px-[11px] py-1 text-xs font-bold"
+              [class.bg-[var(--ok-bg)]]="vehiculo.subsidiable"
+              [class.text-[var(--ok)]]="vehiculo.subsidiable"
+              [class.bg-[var(--surface-3)]]="!vehiculo.subsidiable"
+              [class.text-[var(--text-3)]]="!vehiculo.subsidiable">
+              {{ vehiculo.subsidiable ? 'Subsidiable' : 'No subsidiable' }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <article class="mt-4 rounded-[14px] border border-[var(--primary)] bg-[var(--primary-soft)] p-4">
+        <h2 class="mb-2 text-[15px] font-extrabold text-[var(--primary)]">Factor de prorrateo Qa / Ta</h2>
+        <p class="mb-2.5 text-[13.5px] leading-relaxed text-[var(--text-2)]">
+          El combustible a granel se reparte entre tus vehículos. El subsidio solo cubre la parte de los <b>subsidiables</b> (Qa) sobre el <b>total</b> que usa ese combustible (Ta).
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3.5 rounded-[10px] bg-[var(--surface)] p-3.5">
+          <div class="prorrateo-item">
+            <strong style="color: var(--ok)">{{ cantidadSubsidiables }}</strong>
+            <span>Qa subsidiables</span>
+          </div>
+          <span class="formula-symbol">/</span>
+          <div class="prorrateo-item">
+            <strong>{{ vehiculosAbastecidos.length }}</strong>
+            <span>Ta totales</span>
+          </div>
+          <span class="formula-symbol">=</span>
+          <div class="prorrateo-item">
+            <strong style="color: var(--primary)">{{ factorProrrateo | percent:'1.0-0' }}</strong>
+            <span>del subsidio</span>
+          </div>
+        </div>
+
+        <div class="mt-[11px] text-[13px] leading-relaxed text-[var(--text-2)]">
+          De los <b>{{ totalGalonesMayorista | number:'1.2-2' }} gal</b> comprados se reconoce el {{ factorProrrateo | percent:'1.0-0' }} → <b>{{ galonesSubsidiados | number:'1.2-2' }} gal</b> subsidiados = <b>S/ 6,000.00</b>.
+        </div>
+      </article>
+    </div>
+    }
+  </section>
+</div>
+
+@if (editor; as model) {
+  <div class="atu-modal-overlay z-[100]" role="presentation" (click)="cerrarEditor()">
+    <section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-title" (click)="$event.stopPropagation()">
+      <header class="editor-modal__header">
+        <div>
+          <h2 id="editor-title">{{ editorModo === 'crear' ? 'Registrar comprobante' : 'Editar comprobante' }}</h2>
+          <p>Se valida en SUNAT (que exista) y Osinergmin (grifo inscrito)</p>
+        </div>
+        <button type="button" class="editor-modal__close" aria-label="Cerrar modal" (click)="cerrarEditor()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+
+      <div class="editor-modal__body">
+        <div class="editor-section-title">1 · Vehículo y conductor</div>
+        <div class="editor-grid editor-grid--two">
+          <label class="editor-field">
+            <span>Placa *</span>
+            <select [(ngModel)]="model.placa" class="mono">
+              <option value="">Selecciona una placa…</option>
+              <option value="AXG-712">AXG-712</option>
+              <option value="B2W-458">B2W-458</option>
+              <option value="C4T-119">C4T-119</option>
+            </select>
+          </label>
+          <label class="editor-field">
+            <span>Conductor</span>
+            <input [(ngModel)]="model.conductor" placeholder="Nombre completo" />
+          </label>
+        </div>
+
+        <div class="editor-grid editor-grid--document">
+          <label class="editor-field">
+            <span>Documento</span>
+            <select [(ngModel)]="model.tipoDocumento">
+              <option value="DNI">DNI</option>
+              <option value="CE">CE</option>
+            </select>
+          </label>
+          <label class="editor-field">
+            <span>N.° documento</span>
+            <input [(ngModel)]="model.numeroDocumento" class="mono" />
+          </label>
+          <label class="editor-field">
+            <span>Licencia de conducir</span>
+            <input [(ngModel)]="model.licencia" class="mono" placeholder="Q00000000" />
+          </label>
+        </div>
+
+        <div class="editor-section-title">2 · Factura</div>
+        <div class="editor-grid editor-grid--invoice">
+          <label class="editor-field">
+            <span>Serie</span>
+            <input [(ngModel)]="model.serie" class="mono" placeholder="F001" />
+          </label>
+          <label class="editor-field">
+            <span>Número *</span>
+            <input [(ngModel)]="model.numero" class="mono" placeholder="0001234" />
+          </label>
+          <label class="editor-field">
+            <span>Emisión</span>
+            <input [(ngModel)]="model.emision" class="mono" placeholder="dd/mm/aaaa" />
+          </label>
+          <label class="editor-field">
+            <span>Mes</span>
+            <select [(ngModel)]="model.mes">
+              <option value="Mayo">Mayo</option>
+              <option value="Junio">Junio</option>
+              <option value="Julio">Julio</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="editor-section-title">3 · Grifo</div>
+        <div class="editor-grid editor-grid--station">
+          <label class="editor-field">
+            <span>RUC del grifo</span>
+            <input [(ngModel)]="model.rucGrifo" class="mono" placeholder="20xxxxxxxxx" />
+          </label>
+          <label class="editor-field">
+            <span>Razón social</span>
+            <input [(ngModel)]="model.razonSocial" placeholder="Se completa según el RUC" />
+          </label>
+        </div>
+
+        @if (editorModo === 'editar') {
+          <div class="station-confirmation">
+            <i class="fa-solid fa-check"></i>
+            Grifo inscrito en Osinergmin — datos traídos por el RUC. Puedes editarlos.
+          </div>
+        }
+
+        <label class="editor-field editor-field--full">
+          <span>Dirección</span>
+          <input [(ngModel)]="model.direccion" placeholder="Av. / Jr. / Calle y número" />
+        </label>
+
+        <div class="editor-grid editor-grid--location">
+          <label class="editor-field">
+            <span>Departamento</span>
+            <select [(ngModel)]="model.departamento">
+              <option value="">—</option>
+              <option value="Lima">Lima</option>
+              <option value="Arequipa">Arequipa</option>
+              <option value="La Libertad">La Libertad</option>
+            </select>
+          </label>
+          <label class="editor-field">
+            <span>Provincia</span>
+            <select [(ngModel)]="model.provincia">
+              <option value="">—</option>
+              <option value="Lima">Lima</option>
+              <option value="Callao">Callao</option>
+            </select>
+          </label>
+          <label class="editor-field">
+            <span>Distrito</span>
+            <select [(ngModel)]="model.distrito">
+              <option value="">—</option>
+              <option value="Villa El Salvador">Villa El Salvador</option>
+              <option value="Santiago de Surco">Santiago de Surco</option>
+              <option value="San Juan de Miraflores">San Juan de Miraflores</option>
+              <option value="Miraflores">Miraflores</option>
+              <option value="Ate">Ate</option>
+              <option value="San Juan de Lurigancho">San Juan de Lurigancho</option>
+              <option value="Cercado de Lima">Cercado de Lima</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="editor-section-title">4 · Combustible</div>
+        <div class="editor-grid editor-grid--fuel">
+          <label class="editor-field">
+            <span>Tipo</span>
+            <select [(ngModel)]="model.combustible">
+              <option value="B5">B5</option>
+              <option value="B20">B20</option>
+            </select>
+          </label>
+          <label class="editor-field">
+            <span>Azufre (ppm)</span>
+            <input [(ngModel)]="model.ppm" type="number" min="0" class="mono" placeholder="45" />
+          </label>
+          <label class="editor-field">
+            <span>Galones *</span>
+            <input [(ngModel)]="model.galones" type="number" min="0.01" step="0.01" class="mono" placeholder="0.00" />
+          </label>
+        </div>
+
+        @if (editorError) {
+          <div class="editor-error" role="alert"><i class="fa-solid fa-circle-exclamation"></i>{{ editorError }}</div>
+        }
+      </div>
+
+      <footer class="editor-modal__footer">
+        <button type="button" class="editor-cancel" (click)="cerrarEditor()">Cancelar</button>
+        <button type="button" class="editor-save" (click)="guardarEditor()">
+          {{ editorModo === 'crear' ? 'Validar y registrar' : 'Guardar cambios' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}

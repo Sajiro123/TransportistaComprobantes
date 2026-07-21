@@ -1,8 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { VehiculoCargaComponent } from './vehiculo-carga/vehiculo-carga.component';
+import { ApiVerificacionService } from '../../../core/services/api-verificacion.service';
+import { ApiAuthService } from '../../../core/services/api-auth.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { DatosTransportista, VerificacionServiceError } from '../../../core/models/verificacion.models';
 
 export interface DatoTransportista {
   k: string;
@@ -42,6 +47,10 @@ export interface StepItem {
   styleUrl: './verificacion.component.scss',
 })
 export class VerificacionComponent implements OnInit {
+  private readonly apiVerificacion = inject(ApiVerificacionService);
+  private readonly apiAuth = inject(ApiAuthService);
+  private readonly auth = inject(AuthService);
+
   steps: StepItem[] = [
     { label: 'Verificación', subtitle: 'Paso 1', icon: 'fa-solid fa-shield-check' },
     { label: 'Vehículos',    subtitle: 'Paso 2', icon: 'fa-solid fa-truck' },
@@ -49,13 +58,12 @@ export class VerificacionComponent implements OnInit {
   activeIndex = 0;
 
   // ── Datos del transportista ─────────────────────────────────
-  datosTransportista: DatoTransportista[] = [
-    { k: 'RUC', v: '20512345678' },
-    { k: 'Razón social', v: 'TRANSPORTES LIMA S.A.C.' },
-    { k: 'Estado SUNAT', v: 'ACTIVO' },
-    { k: 'Condición SUNAT', v: 'HABIDO' },
-    { k: 'Domicilio fiscal', v: 'Av. Javier Prado Este 1230, San Isidro, Lima' },
-  ];
+  datosTransportista: DatoTransportista[] = [];
+  cargandoDatos = false;
+  errorDatos = '';
+  rucConsulta = '';
+  readonly usandoMocks = this.apiVerificacion.usandoMocks;
+  private transportista: DatosTransportista | null = null;
 
   // ── Autorizaciones ──────────────────────────────────────────
   autorizaciones: Autorizacion[] = [
@@ -77,10 +85,19 @@ export class VerificacionComponent implements OnInit {
       ambito: 'Lima Metropolitana',
       vigencia: '15/01/2021 – 14/01/2024',
     },
+    {
+      servicio: 'Transporte Especial – Servicio de trabajadores',
+      estado: 'Vigente',
+      badgeSeverity: 'success',
+      resolucion: 'RD-2024-0178-ATU',
+      autoridad: 'ATU',
+      ambito: 'Lima Metropolitana',
+      vigencia: '10/05/2024 – 09/05/2027',
+    },
   ];
 
   get autCount(): number {
-    return this.autorizaciones.length;
+    return this.transportista?.totalAutorizaciones ?? this.autorizaciones.length;
   }
 
   // ── Semáforo de condiciones ─────────────────────────────────
@@ -115,6 +132,30 @@ export class VerificacionComponent implements OnInit {
 
   ngOnInit() {
     this.sinAutVigente = !this.autorizaciones.some(a => a.badgeSeverity === 'success');
+    this.cargarDatosTransportista();
+  }
+
+  cargarDatosTransportista(): void {
+    const usuarioSesion = this.apiAuth.getUserFromSession() ?? this.auth.getSession();
+    const rucSesion = usuarioSesion?.numDocumento || '';
+    this.rucConsulta = this.usandoMocks ? '20512345678' : rucSesion;
+
+    if (!this.rucConsulta) {
+      this.errorDatos = 'No se encontró el RUC del transportista en la sesión actual.';
+      return;
+    }
+
+    this.cargandoDatos = true;
+    this.errorDatos = '';
+
+    this.apiVerificacion.obtenerDatosTransportista(this.rucConsulta).pipe(
+      finalize(() => this.cargandoDatos = false),
+    ).subscribe({
+      next: datos => this.aplicarDatosTransportista(datos),
+      error: (error: VerificacionServiceError) => {
+        this.errorDatos = error.descripcion || error.message;
+      },
+    });
   }
 
   nextStep() {
@@ -127,5 +168,32 @@ export class VerificacionComponent implements OnInit {
     if (this.activeIndex > 0) {
       this.activeIndex--;
     }
+  }
+
+  private aplicarDatosTransportista(datos: DatosTransportista): void {
+    this.transportista = datos;
+    this.datosTransportista = [
+      { k: 'ID interno', v: String(datos.id) },
+      { k: 'RUC', v: datos.ruc },
+      { k: 'Razón social', v: datos.razonSocial },
+      { k: 'Tipo de entidad', v: datos.tipoEntidad },
+      { k: 'Estado', v: datos.estado },
+      { k: 'Total de autorizaciones', v: String(datos.totalAutorizaciones) },
+    ];
+
+    const habilitado = datos.estado.trim().toLowerCase() === 'habilitado';
+    this.condiciones = this.condiciones.map((condicion, index) => index === 0
+      ? {
+          ...condicion,
+          glyph: habilitado ? '✓' : '!',
+          label: 'Estado del transportista',
+          estado: datos.estado.toUpperCase(),
+          estadoColor: habilitado ? 'success' : 'danger',
+          barColor: habilitado ? 'var(--ok)' : 'var(--bad)',
+          why: habilitado
+            ? 'El transportista figura como habilitado en el registro consultado. Está apto para continuar.'
+            : 'El transportista no figura como habilitado. Revisa su situación antes de continuar.',
+        }
+      : condicion);
   }
 }

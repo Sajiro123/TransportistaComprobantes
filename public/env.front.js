@@ -19,6 +19,7 @@
   // URL base del API de Comprobantes y modo mock temporal
   // window.__env.API_COMPROBANTE_URL = 'https://apidev.atu.gob.pe/api-subsidio/api_comprobante';
   window.__env.API_COMPROBANTE_URL = 'http://localhost:8082/api_comprobante';
+  // Cambiar a false cuando api_comprobante esté integrado y disponible.
   window.__env.API_COMPROBANTE_MOCK = true;
 
   // Google reCAPTCHA v3 Site Key

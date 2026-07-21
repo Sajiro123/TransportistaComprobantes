@@ -28,6 +28,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/registro/verificacion/verificacion.component').then(m => m.VerificacionComponent),
       },
+      // Carga y cálculo
+      {
+        path: 'carga-calculo/comprobantes',
+        loadComponent: () =>
+          import('./pages/carga-calculo/comprobantes/comprobantes.component').then(m => m.ComprobantesComponent),
+      },
       // Redirect vacío → perfil
       { path: '', redirectTo: 'perfil', pathMatch: 'full' },
     ],

@@ -8,6 +8,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class SidebarNavComponent {
   @Output() navigate = new EventEmitter<void>();
+  cargaOpen = true;
+
+  toggleCarga() {
+    this.cargaOpen = !this.cargaOpen;
+  }
 
   onNavigate() {
     this.navigate.emit();
