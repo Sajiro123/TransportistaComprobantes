@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TableModule } from 'primeng/table';
 
 type Forma = 'A' | 'B';
 type EstadoFiltro = 'todos' | 'val' | 'pend' | 'obs';
@@ -76,7 +77,7 @@ interface ComprobanteEditor {
 @Component({
   selector: 'app-comprobantes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TableModule],
   templateUrl: './comprobantes.component.html',
   styleUrl: './comprobantes.component.scss',
 })

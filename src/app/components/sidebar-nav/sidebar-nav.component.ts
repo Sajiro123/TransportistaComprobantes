@@ -9,9 +9,14 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 export class SidebarNavComponent {
   @Output() navigate = new EventEmitter<void>();
   cargaOpen = true;
+  envioOpen = true;
 
   toggleCarga() {
     this.cargaOpen = !this.cargaOpen;
+  }
+
+  toggleEnvio() {
+    this.envioOpen = !this.envioOpen;
   }
 
   onNavigate() {

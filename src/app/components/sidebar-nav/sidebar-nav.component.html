@@ -84,10 +84,63 @@
       <div id="carga-calculo-submenu" class="relative ml-[34px] border-l border-white/10 py-1 pl-5">
         <a routerLink="/carga-calculo/comprobantes"
           routerLinkActive="!border-[#00A3E0]/30 !bg-[#00A3E0]/15 !text-white"
+          #comprobantesLink="routerLinkActive"
           class="group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[12.5px] font-semibold text-white/55 transition-all duration-200 hover:bg-white/[.04] hover:text-white"
           (click)="onNavigate()">
-          <i class="fa-solid fa-file-invoice text-[13px] text-[#00A3E0]"></i>
+          <span class="inline-flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-white/10 text-[11.5px] font-extrabold text-white/65 transition-colors group-hover:bg-[#00A3E0]/25 group-hover:text-white" [style.background]="comprobantesLink.isActive ? '#00A3E0' : null" [style.color]="comprobantesLink.isActive ? '#fff' : null">1</span>
           <span>Comprobantes</span>
+          <i class="fa-solid fa-chevron-right ml-auto text-[9px] opacity-40 transition-transform group-hover:translate-x-0.5"></i>
+        </a>
+        <a routerLink="/carga-calculo/notas-credito"
+          routerLinkActive="!border-[#00A3E0]/30 !bg-[#00A3E0]/15 !text-white"
+          #notasLink="routerLinkActive"
+          class="group mt-1 flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[12.5px] font-semibold text-white/55 transition-all duration-200 hover:bg-white/[.04] hover:text-white"
+          (click)="onNavigate()">
+          <span class="inline-flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-white/10 text-[11.5px] font-extrabold text-white/65 transition-colors group-hover:bg-[#00A3E0]/25 group-hover:text-white" [style.background]="notasLink.isActive ? '#00A3E0' : null" [style.color]="notasLink.isActive ? '#fff' : null">2</span>
+          <span>Notas de crédito</span>
+          <i class="fa-solid fa-chevron-right ml-auto text-[9px] opacity-40 transition-transform group-hover:translate-x-0.5"></i>
+        </a>
+        <a routerLink="/carga-calculo/resumen"
+          routerLinkActive="!border-[#00A3E0]/30 !bg-[#00A3E0]/15 !text-white"
+          #resumenLink="routerLinkActive"
+          class="group mt-1 flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[12.5px] font-semibold text-white/55 transition-all duration-200 hover:bg-white/[.04] hover:text-white"
+          (click)="onNavigate()">
+          <span class="inline-flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-white/10 text-[11.5px] font-extrabold text-white/65 transition-colors group-hover:bg-[#00A3E0]/25 group-hover:text-white" [style.background]="resumenLink.isActive ? '#00A3E0' : null" [style.color]="resumenLink.isActive ? '#fff' : null">3</span>
+          <span>Resumen</span>
+          <i class="fa-solid fa-chevron-right ml-auto text-[9px] opacity-40 transition-transform group-hover:translate-x-0.5"></i>
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Envío -->
+  <div class="flex flex-col gap-1">
+    <button type="button"
+      class="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-transparent px-3 py-3 text-left text-white/70 transition-all duration-300 hover:border-white/[.06] hover:bg-white/[.03] hover:text-white"
+      [attr.aria-expanded]="envioOpen"
+      aria-controls="envio-submenu"
+      (click)="toggleEnvio()">
+      <div class="relative z-10 flex h-11 w-11 flex-none items-center justify-center rounded-[14px] border border-white/[.08] bg-white/[.04] shadow-inner transition-all duration-300 group-hover:scale-110 group-hover:border-[#00A3E0]/30 group-hover:bg-[#00A3E0]/15">
+        <i class="fa-solid fa-paper-plane text-[18px] text-white/80 transition-all duration-300 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(0,163,224,0.6)]"></i>
+      </div>
+
+      <div class="z-10 flex flex-1 flex-col overflow-hidden">
+        <span class="truncate text-[14px] font-semibold tracking-[0.2px] text-white/80 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white">Envío</span>
+        <span class="mt-0.5 truncate text-[11px] font-medium text-white/40 transition-colors duration-300 group-hover:text-white/60">Presentación de solicitud</span>
+      </div>
+
+      <i class="fa-solid fa-chevron-down z-10 text-[10px] text-white/35 transition-transform duration-300" [class.rotate-180]="envioOpen"></i>
+    </button>
+
+    @if (envioOpen) {
+      <div id="envio-submenu" class="relative ml-[34px] border-l border-white/10 py-1 pl-5">
+        <a routerLink="/envio/declaracion-jurada"
+          routerLinkActive="!border-[#00A3E0]/30 !bg-[#00A3E0]/15 !text-white"
+          #declaracionLink="routerLinkActive"
+          class="group flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[12.5px] font-semibold text-white/55 transition-all duration-200 hover:bg-white/[.04] hover:text-white"
+          (click)="onNavigate()">
+          <span class="inline-flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full bg-white/10 text-[11.5px] font-extrabold text-white/65 transition-colors group-hover:bg-[#00A3E0]/25 group-hover:text-white" [style.background]="declaracionLink.isActive ? '#00A3E0' : null" [style.color]="declaracionLink.isActive ? '#fff' : null">1</span>
+          <span>Declaración jurada</span>
           <i class="fa-solid fa-chevron-right ml-auto text-[9px] opacity-40 transition-transform group-hover:translate-x-0.5"></i>
         </a>
       </div>

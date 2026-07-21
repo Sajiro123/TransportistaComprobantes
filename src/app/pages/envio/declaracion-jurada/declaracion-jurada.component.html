@@ -1,0 +1,90 @@
+<div class="declaracion-page">
+  <div class="mb-[18px] grid gap-3 md:grid-cols-2">
+    <div class="flex items-center gap-2.5 rounded-xl border border-[var(--warn)] bg-[var(--warn-bg)] px-3.5 py-2.5">
+      <i class="fa-regular fa-clock text-[var(--warn)]"></i>
+      <span class="text-[13px] font-semibold text-[var(--warn)]">Plazo de compra: 29/05/2026 – 28/07/2026</span>
+      <span class="ml-auto whitespace-nowrap rounded-full bg-[var(--warn)] px-2.5 py-0.5 text-xs font-bold text-white">8 días</span>
+    </div>
+    <div class="flex items-center gap-2.5 rounded-xl border border-[var(--primary)] bg-[var(--primary-soft)] px-3.5 py-2.5">
+      <i class="fa-solid fa-circle-info text-[var(--primary)]"></i>
+      <span class="text-[12.5px] font-medium leading-snug text-[var(--primary)]">El beneficiario es el <b>transportista titular de la autorización</b>, no el dueño del vehículo.</span>
+    </div>
+  </div>
+
+  @if (enviado) {
+    <section class="animate-entry">
+      <div class="locked-banner">
+        <span class="locked-icon"><i class="fa-solid fa-lock"></i></span>
+        <div class="min-w-0 flex-1">
+          <h2>Solicitud enviada — bloqueada para edición</h2>
+          <p>Tu información está en validación y evaluación para el pase a subsidio. Conforme al DU 004-2026, aún puedes modificarla una (1) sola vez.</p>
+          @if (modificacionesRestantes > 0) {
+            <button type="button" (click)="modificarSolicitud()">Modificar solicitud (te queda {{ modificacionesRestantes }})</button>
+          }
+        </div>
+      </div>
+
+      <div class="confirmation-view">
+        <div class="confirmation-icon"><i class="fa-solid fa-check"></i></div>
+        <h1>Declaración jurada enviada</h1>
+        <p class="confirmation-lead">Tu solicitud fue registrada y pasó a <b>validación y evaluación</b> para el pase a subsidio. Conserva tu constancia.</p>
+
+        <article class="receipt-card">
+          <div class="receipt-number">
+            <span>Número de solicitud</span>
+            <strong class="mono">SUB-2026-0048217</strong>
+          </div>
+          <div class="receipt-row"><span>Transportista</span><strong>Transportes Lima Sur S.A.C.</strong></div>
+          <div class="receipt-row"><span>Fecha y hora</span><strong class="mono">12/07/2026 14:32</strong></div>
+          <div class="receipt-row"><span>Estado</span><strong class="receipt-status">En validación y evaluación</strong></div>
+          <div class="receipt-row"><span>Monto solicitado</span><strong class="mono receipt-amount">S/ {{ totalSubsidio | number:'1.2-2' }}</strong></div>
+        </article>
+
+        <div class="receipt-lock"><i class="fa-solid fa-lock"></i><span>Tu solicitud está bloqueada para edición. Conforme al DU 004-2026, podrás modificarla una (1) sola vez.</span></div>
+
+        <div class="receipt-actions">
+          <button type="button" class="download-button" (click)="descargarCargo()"><i class="fa-solid fa-file-pdf"></i> {{ cargoDescargado ? 'Cargo descargado' : 'Descargar cargo (PDF)' }}</button>
+          @if (modificacionesRestantes > 0) {
+            <button type="button" class="modify-button" (click)="modificarSolicitud()">Modificar solicitud (te queda {{ modificacionesRestantes }})</button>
+          }
+        </div>
+      </div>
+    </section>
+  } @else {
+    <section class="animate-entry">
+      <header class="mb-3.5">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-md bg-[var(--primary)] px-2.5 py-[3px] text-[10.5px] font-extrabold uppercase tracking-wide text-[var(--primary-contrast)]">Sección 3 · Envío</span>
+          <span class="text-[10.5px] font-bold uppercase tracking-wide text-[var(--text-3)]">Hoja 1 de 1</span>
+        </div>
+        <h1 class="mt-1 text-2xl font-extrabold text-[var(--text)]">Declaración jurada y envío</h1>
+        <p class="mt-1.5 text-[13.5px] text-[var(--text-3)]">Revisa el monto y declara la veracidad de tu información antes de enviar.</p>
+      </header>
+
+      <article class="amount-card">
+        <div class="section-label">Monto del subsidio por forma de adquisición</div>
+        <div class="flex flex-col gap-[15px]">
+          @for (forma of montos; track forma.codigo) {
+            <div>
+              <div class="mb-1.5 flex items-baseline justify-between gap-3 text-[13px]">
+                <span class="font-bold text-[var(--text-2)]">Forma {{ forma.codigo }} · {{ forma.nombre }} <span class="font-semibold text-[var(--text-3)]">({{ forma.porcentaje }}%)</span></span>
+                <span class="mono font-extrabold" [class.text-[var(--primary)]]="forma.tono === 'primary'" [class.text-[var(--warn)]]="forma.tono === 'warn'">S/ {{ forma.monto | number:'1.2-2' }}</span>
+              </div>
+              <div class="h-[15px] overflow-hidden rounded-lg bg-[var(--surface-3)]"><div class="h-full rounded-lg transition-all duration-700" [class.bg-[var(--primary)]]="forma.tono === 'primary'" [class.bg-[var(--warn)]]="forma.tono === 'warn'" [style.width.%]="forma.porcentaje"></div></div>
+            </div>
+          }
+        </div>
+        <div class="mt-[17px] flex items-center justify-between gap-3 border-t border-[var(--border)] pt-[15px]"><span class="text-sm font-extrabold text-[var(--text)]">Total del subsidio</span><span class="mono text-2xl font-extrabold text-[var(--primary)]">S/ {{ totalSubsidio | number:'1.2-2' }}</span></div>
+      </article>
+
+      <div class="info-message"><i class="fa-solid fa-circle-info mt-0.5 text-[var(--primary)]"></i><span>Al enviar, tu solicitud <b>queda bloqueada para edición</b> y pasa a <b>validación y evaluación</b> para el pase a subsidio. Conforme al DU 004-2026, el monto <b>solo podrá modificarse una (1) sola vez</b>.</span></div>
+
+      <label class="declaration-check" [class.declaration-check--active]="aceptada">
+        <input type="checkbox" [(ngModel)]="aceptada" />
+        <span>Declaro bajo juramento que la información registrada es veraz. Entiendo que <b>presentar información falsa causa la pérdida automática del subsidio</b>, sin perjuicio de las responsabilidades legales que correspondan.</span>
+      </label>
+
+      <button type="button" class="send-button" [disabled]="!aceptada" (click)="enviarDeclaracion()"><i class="fa-solid fa-paper-plane"></i> Enviar declaración jurada</button>
+    </section>
+  }
+</div>

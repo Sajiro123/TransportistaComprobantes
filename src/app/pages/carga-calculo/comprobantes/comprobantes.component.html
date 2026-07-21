@@ -32,9 +32,6 @@
         Registra tus facturas de compra <b>con placa</b> — una por una o varias por Excel. Cada comprobante se valida en SUNAT y Osinergmin. Si una factura tiene una nota de crédito activa, queda <b>inhabilitada</b>.
       </p>
       <div class="flex flex-wrap gap-2.5">
-        <button type="button" class="action-button action-button--secondary">
-          <i class="fa-solid fa-arrow-up-from-bracket"></i> Cargar Excel
-        </button>
         <button type="button" class="action-button action-button--primary" (click)="abrirRegistro()">
           <i class="fa-solid fa-plus"></i> Agregar comprobante
         </button>
@@ -60,45 +57,75 @@
     </div>
 
     <div class="table-card">
-      <div class="overflow-x-auto">
-        <table class="comprobantes-table">
-          <thead>
-            <tr>
-              <th>Comprobante</th>
-              <th>Placa · conductor</th>
-              <th>Grifo · ubicación</th>
-              <th>Combustible</th>
-              <th>Galones</th>
-              <th>Estado</th>
-              <th class="text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of comprobantesFiltrados; track item.id) {
-              <tr>
-                <td><b class="mono">{{ item.numero }}</b><small>{{ item.fecha }}</small></td>
-                <td><b class="mono text-[13.5px]">{{ item.placa }}</b><small>{{ item.conductor }}</small></td>
-                <td><b>{{ item.grifo }}</b><small>{{ item.ubicacion }}</small></td>
-                <td><span class="fuel-badge">{{ item.combustible }}</span> <small class="mono inline">{{ item.ppm }} ppm</small></td>
-                <td class="mono">{{ item.galones | number:'1.2-2' }}</td>
-                <td>
-                  <span class="status-badge" [class.status-badge--ok]="item.estado === 'val'" [class.status-badge--pending]="item.estado === 'pend'" [class.status-badge--bad]="item.estado === 'obs'">
-                    <i class="fa-solid" [class]="item.estadoIcon"></i>{{ item.estadoLabel }}
-                  </span>
-                </td>
-                <td>
-                  <div class="flex justify-end gap-1.5">
-                    <button type="button" class="icon-button" title="Editar" aria-label="Editar comprobante" (click)="abrirEditor(item)"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" class="icon-button icon-button--danger" title="Retirar" aria-label="Retirar comprobante" (click)="retirar(item.id)"><i class="fa-solid fa-trash"></i></button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="7" class="!py-10 text-center text-[var(--text-3)]"><b class="block text-[var(--text-2)]">Sin resultados</b>No hay comprobantes que coincidan con los filtros.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <p-table
+        [value]="comprobantesFiltrados"
+        dataKey="id"
+        styleClass="comprobantes-table p-datatable-sm"
+        [paginator]="true"
+        [rows]="5"
+        [rowsPerPageOptions]="[5, 10, 25]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first}–{last} de {totalRecords} registros"
+        paginatorDropdownAppendTo="body"
+        [alwaysShowPaginator]="true"
+        [scrollable]="true"
+        scrollHeight="480px"
+        [tableStyle]="{'min-width': '1040px'}">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="numero" style="width: 16%; min-width: 160px">
+              <span class="sortable-heading">Comprobante <p-sortIcon field="numero" /></span>
+            </th>
+            <th pSortableColumn="placa" style="width: 17%; min-width: 175px">
+              <span class="sortable-heading">Placa · conductor <p-sortIcon field="placa" /></span>
+            </th>
+            <th pSortableColumn="grifo" style="width: 23%; min-width: 235px">
+              <span class="sortable-heading">Grifo · ubicación <p-sortIcon field="grifo" /></span>
+            </th>
+            <th pSortableColumn="combustible" style="width: 12%; min-width: 130px">
+              <span class="sortable-heading">Combustible <p-sortIcon field="combustible" /></span>
+            </th>
+            <th pSortableColumn="galones" style="width: 10%; min-width: 110px">
+              <span class="sortable-heading">Galones <p-sortIcon field="galones" /></span>
+            </th>
+            <th pSortableColumn="estadoLabel" style="width: 14%; min-width: 165px">
+              <span class="sortable-heading">Estado <p-sortIcon field="estadoLabel" /></span>
+            </th>
+            <th style="width: 8%; min-width: 105px; text-align: right">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td><b class="mono">{{ item.numero }}</b><small>{{ item.fecha }}</small></td>
+            <td><b class="mono text-[13.5px]">{{ item.placa }}</b><small>{{ item.conductor }}</small></td>
+            <td><b>{{ item.grifo }}</b><small>{{ item.ubicacion }}</small></td>
+            <td><span class="fuel-badge">{{ item.combustible }}</span> <small class="mono inline">{{ item.ppm }} ppm</small></td>
+            <td class="mono">{{ item.galones | number:'1.2-2' }}</td>
+            <td>
+              <span class="status-badge" [class.status-badge--ok]="item.estado === 'val'" [class.status-badge--pending]="item.estado === 'pend'" [class.status-badge--bad]="item.estado === 'obs'">
+                <i class="fa-solid" [class]="item.estadoIcon"></i>{{ item.estadoLabel }}
+              </span>
+            </td>
+            <td>
+              <div class="flex justify-end gap-1.5">
+                <button type="button" class="icon-button" title="Editar" aria-label="Editar comprobante" (click)="abrirEditor(item)"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="icon-button icon-button--danger" title="Retirar" aria-label="Retirar comprobante" (click)="retirar(item.id)"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="!py-10 text-center text-[var(--text-3)]">
+              <b class="block text-[var(--text-2)]">Sin resultados</b>
+              No hay comprobantes que coincidan con los filtros.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
 
     <div class="mb-2.5 mt-5 px-0.5 text-[11.5px] font-bold uppercase tracking-wide text-[var(--text-3)]">Acumulado por vehículo</div>

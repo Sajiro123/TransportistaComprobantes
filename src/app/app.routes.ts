@@ -34,6 +34,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/carga-calculo/comprobantes/comprobantes.component').then(m => m.ComprobantesComponent),
       },
+      {
+        path: 'carga-calculo/notas-credito',
+        loadComponent: () =>
+          import('./pages/carga-calculo/notas-credito/notas-credito.component').then(m => m.NotasCreditoComponent),
+      },
+      {
+        path: 'carga-calculo/resumen',
+        loadComponent: () =>
+          import('./pages/carga-calculo/resumen/resumen.component').then(m => m.ResumenComponent),
+      },
+      // Envío
+      {
+        path: 'envio/declaracion-jurada',
+        loadComponent: () =>
+          import('./pages/envio/declaracion-jurada/declaracion-jurada.component').then(m => m.DeclaracionJuradaComponent),
+      },
       // Redirect vacío → perfil
       { path: '', redirectTo: 'perfil', pathMatch: 'full' },
     ],
