@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, Observable } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { VehiculoCargaComponent } from './vehiculo-carga/vehiculo-carga.component';
@@ -13,12 +13,6 @@ import {
   AutorizacionTransportista,
   SemaforoCondicion,
 } from '@core/models/verificacion.models';
-
-export interface StepItem {
-  label: string;
-  subtitle: string;
-  icon: string;
-}
 
 export interface DatoTransportista {
   k: string;
@@ -55,16 +49,6 @@ export class VerificacionComponent implements OnInit {
   private readonly apiVerificacion = inject(ApiVerificacionService);
   private readonly apiAuth = inject(ApiAuthService);
   private readonly auth = inject(AuthService);
-
-  steps: StepItem[] = [
-    {
-      label: 'Verificación',
-      subtitle: 'Paso 1',
-      icon: 'fa-solid fa-shield-check',
-    },
-    { label: 'Vehículos', subtitle: 'Paso 2', icon: 'fa-solid fa-truck' },
-  ];
-  activeIndex = 0;
 
   // ── Datos del transportista ─────────────────────────────────
   datosTransportista: DatoTransportista[] = [];
@@ -194,11 +178,12 @@ export class VerificacionComponent implements OnInit {
   private aplicarDatosTransportista(datos: DatosTransportista): void {
     this.transportista = datos;
     this.datosTransportista = [
-      { k: 'Razón social', v: datos.razonSocial },
+      { k: 'ID interno', v: String(datos.id) },
       { k: 'RUC', v: datos.ruc },
-      { k: 'Tipo', v: datos.tipoEntidad },
-      { k: 'Estado del RUC', v: datos.estado },
-      { k: 'Estado de habilitación', v: datos.estado },
+      { k: 'Razón social', v: datos.razonSocial },
+      { k: 'Tipo de entidad', v: datos.tipoEntidad },
+      { k: 'Estado', v: datos.estado },
+      { k: 'Total de autorizaciones', v: String(datos.totalAutorizaciones) },
     ];
   }
 

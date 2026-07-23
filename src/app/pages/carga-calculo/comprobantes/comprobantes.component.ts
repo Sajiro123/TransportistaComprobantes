@@ -117,11 +117,14 @@ export class ComprobantesComponent implements OnInit {
   // Editor models
   editorModo: 'crear' | 'editar' = 'editar';
   editorError = '';
+  editorSubmitted = false;
+  readonly todayDate = this.formatLocalDate(new Date());
   editor: any = null;
   archivoSeleccionado: File | null = null;
-  editorSubmitted = false;
+  archivoError = '';
+  isFileDragging = false;
+
   comprobantePendienteEliminar: ComprobanteListResponse | null = null;
-  readonly todayDate = this.formatLocalDate(new Date());
 
   // Dummy arrays para Forma B (UI original los usaba)
   acumulados: any[] = [];
@@ -252,9 +255,61 @@ export class ComprobantesComponent implements OnInit {
     return this.totalGalonesMayorista * this.factorProrrateo;
   }
 
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.validarArchivo(file);
+    input.value = '';
+  }
+
+  onFileDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isFileDragging = true;
+  }
+
+  onFileDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isFileDragging = false;
+  }
+
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isFileDragging = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.validarArchivo(file);
+  }
+
+  quitarArchivo(): void {
+    this.archivoSeleccionado = null;
+    this.archivoError = '';
+  }
+
+  private validarArchivo(file: File): void {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      this.archivoSeleccionado = null;
+      this.archivoError = 'Selecciona un archivo PDF o una imagen JPG/PNG.';
+      return;
+    }
+
+    if (file.size > maxSize) {
+      this.archivoSeleccionado = null;
+      this.archivoError = 'El comprobante no puede superar los 5 MB.';
+      return;
+    }
+
+    this.archivoSeleccionado = file;
+    this.archivoError = '';
+  }
+
+  // --- Editor ---
+
   abrirRegistro(): void {
     this.editorModo = 'crear';
     this.archivoSeleccionado = null;
+    this.archivoError = '';
     this.editor = {
       uuid: '',
       placa: '',
@@ -265,7 +320,7 @@ export class ComprobantesComponent implements OnInit {
       serie: 'F001',
       numero: '',
       emision: '',
-      mes: 'Junio',
+      mes: '',
       anio: new Date().getFullYear(),
       rucGrifo: '',
       razonSocial: '',
@@ -305,6 +360,7 @@ export class ComprobantesComponent implements OnInit {
           const c = res.data.lista;
           this.editorModo = 'editar';
           this.archivoSeleccionado = null;
+          this.archivoError = '';
 
           let p = '';
           if (c.tipoComprobanteCodigo === 'FORMA_A') {
@@ -353,6 +409,7 @@ export class ComprobantesComponent implements OnInit {
     this.editorError = '';
     this.editorSubmitted = false;
     this.archivoSeleccionado = null;
+    this.archivoError = '';
   }
 
   get editorDocumentoMaxLength(): number {
@@ -442,13 +499,6 @@ export class ComprobantesComponent implements OnInit {
     input.value = value;
     this.editor.licencia = value;
   }
-
-  onFileSelected(event: any) {
-    if (event.target.files && event.target.files.length > 0) {
-      this.archivoSeleccionado = event.target.files[0];
-    }
-  }
-
   onEditorInvoiceSeriesInput(event: Event): void {
     if (!this.editor) return;
     const input = event.target as HTMLInputElement;
@@ -525,7 +575,7 @@ export class ComprobantesComponent implements OnInit {
     };
 
     if (this.editorModo === 'crear') {
-      if (this.forma === 'A' && !this.archivoSeleccionado) {
+      if (!this.archivoSeleccionado) {
         this.editorError = 'Debes adjuntar el archivo del comprobante.';
         return;
       }
@@ -662,9 +712,7 @@ export class ComprobantesComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   cerrarConEscape(): void {
-    if (this.comprobantePendienteEliminar) {
-      this.cerrarConfirmacionEliminar();
-    } else if (this.editor) {
+    if (this.editor) {
       this.cerrarEditor();
     }
   }

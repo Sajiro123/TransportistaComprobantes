@@ -43,9 +43,12 @@ export class ApiComprobanteService {
    * @param ruc RUC del transportista
    */
   obtenerPerfil(ruc: string): Observable<PerfilTransportistaResponse> {
-    return this.http.get<PerfilTransportistaResponse>(`${this.API_URL}/perfil`, {
-      params: { ruc },
-    });
+    return this.http.get<PerfilTransportistaResponse>(
+      `${this.API_URL}/perfil`,
+      {
+        params: { ruc },
+      },
+    );
   }
 
   /**
@@ -103,24 +106,37 @@ export class ApiComprobanteService {
    * GET /api_comprobante/transportistas/{transportistaId}/cuenta-bancaria
    * Desencripta automáticamente los campos sensibles si vienen cifrados.
    */
-  obtenerCuentaBancariaTransportista(transportistaId: number): Observable<CuentaBancariaTransportistaResponse> {
-    return this.http.get<CuentaBancariaTransportistaResponse>(
-      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`
-    ).pipe(
-      map((res) => {
-        if (res.data?.lista) {
-          const item = res.data.lista;
-          try {
-            if (item.cci) item.cci = this.decryptionService.decrypt(item.cci);
-            if (item.dniBeneficiario) item.dniBeneficiario = this.decryptionService.decrypt(item.dniBeneficiario);
-            if (item.nombreBeneficiario) item.nombreBeneficiario = this.decryptionService.decrypt(item.nombreBeneficiario);
-          } catch (err) {
-            console.error('Error al desencriptar datos de cuenta bancaria:', err);
+  obtenerCuentaBancariaTransportista(
+    transportistaId: number,
+  ): Observable<CuentaBancariaTransportistaResponse> {
+    return this.http
+      .get<CuentaBancariaTransportistaResponse>(
+        `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
+      )
+      .pipe(
+        map((res) => {
+          if (res.data?.lista) {
+            const item = res.data.lista;
+            try {
+              if (item.cci) item.cci = this.decryptionService.decrypt(item.cci);
+              if (item.dniBeneficiario)
+                item.dniBeneficiario = this.decryptionService.decrypt(
+                  item.dniBeneficiario,
+                );
+              if (item.nombreBeneficiario)
+                item.nombreBeneficiario = this.decryptionService.decrypt(
+                  item.nombreBeneficiario,
+                );
+            } catch (err) {
+              console.error(
+                'Error al desencriptar datos de cuenta bancaria:',
+                err,
+              );
+            }
           }
-        }
-        return res;
-      })
-    );
+          return res;
+        }),
+      );
   }
 
   /**
@@ -128,11 +144,11 @@ export class ApiComprobanteService {
    */
   registrarCuentaBancariaTransportista(
     transportistaId: number,
-    payload: CuentaBancariaTransportistaRequest
+    payload: CuentaBancariaTransportistaRequest,
   ): Observable<CuentaBancariaTransportistaResponse> {
     return this.http.post<CuentaBancariaTransportistaResponse>(
       `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
-      payload
+      payload,
     );
   }
 
@@ -141,81 +157,138 @@ export class ApiComprobanteService {
    */
   actualizarCuentaBancariaTransportista(
     transportistaId: number,
-    payload: CuentaBancariaTransportistaRequest
+    payload: CuentaBancariaTransportistaRequest,
   ): Observable<CuentaBancariaTransportistaResponse> {
     return this.http.put<CuentaBancariaTransportistaResponse>(
       `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
-      payload
+      payload,
     );
   }
 
   /**
    * DELETE /api_comprobante/transportistas/{transportistaId}/cuenta-bancaria
    */
-  eliminarCuentaBancariaTransportista(transportistaId: number): Observable<{ data: { respuesta: string; mensaje: string } }> {
+  eliminarCuentaBancariaTransportista(
+    transportistaId: number,
+  ): Observable<{ data: { respuesta: string; mensaje: string } }> {
     return this.http.delete<{ data: { respuesta: string; mensaje: string } }>(
-      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`
+      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
     );
   }
 
   // ── Módulo de Comprobantes de Combustible ─────────────────
 
-  listarComprobantes(ruc: string, placa?: string, estado?: string, busqueda?: string): Observable<ApiResponse<ComprobanteListResponse[]>> {
+  listarComprobantes(
+    ruc: string,
+    placa?: string,
+    estado?: string,
+    busqueda?: string,
+  ): Observable<ApiResponse<ComprobanteListResponse[]>> {
     let params: any = { ruc };
     if (placa) params.placa = placa;
     if (estado && estado !== 'todos') params.estado = estado;
     if (busqueda) params.busqueda = busqueda;
 
-    return this.http.get<ApiResponse<ComprobanteListResponse[]>>(`${this.API_URL}/comprobantes`, { params });
+    return this.http.get<ApiResponse<ComprobanteListResponse[]>>(
+      `${this.API_URL}/comprobantes`,
+      { params },
+    );
   }
 
-  obtenerComprobante(comprobanteUuid: string): Observable<ApiResponse<ComprobanteResponse>> {
-    return this.http.get<ApiResponse<ComprobanteResponse>>(`${this.API_URL}/comprobantes/${comprobanteUuid}`);
+  obtenerComprobante(
+    comprobanteUuid: string,
+  ): Observable<ApiResponse<ComprobanteResponse>> {
+    return this.http.get<ApiResponse<ComprobanteResponse>>(
+      `${this.API_URL}/comprobantes/${comprobanteUuid}`,
+    );
   }
 
-  listarDistribuidores(ruc?: string): Observable<ApiResponse<DistribuidorResponse[]>> {
+  listarDistribuidores(
+    ruc?: string,
+  ): Observable<ApiResponse<DistribuidorResponse[]>> {
     let params: any = {};
     if (ruc) params.ruc = ruc;
-    return this.http.get<ApiResponse<DistribuidorResponse[]>>(`${this.API_URL}/comprobantes/distribuidores`, { params });
+    return this.http.get<ApiResponse<DistribuidorResponse[]>>(
+      `${this.API_URL}/comprobantes/distribuidores`,
+      { params },
+    );
   }
 
-  listarVehiculosAsociados(ruc: string): Observable<ApiResponse<VehiculoAsociadoResponse[]>> {
-    return this.http.get<ApiResponse<VehiculoAsociadoResponse[]>>(`${this.API_URL}/comprobantes/vehiculos-asociados`, { params: { ruc } });
+  listarVehiculosAsociados(
+    ruc: string,
+  ): Observable<ApiResponse<VehiculoAsociadoResponse[]>> {
+    return this.http.get<ApiResponse<VehiculoAsociadoResponse[]>>(
+      `${this.API_URL}/comprobantes/vehiculos-asociados`,
+      { params: { ruc } },
+    );
   }
 
   listarTiposCombustible(): Observable<ApiResponse<TipoCombustibleResponse[]>> {
-    return this.http.get<ApiResponse<TipoCombustibleResponse[]>>(`${this.API_URL}/comprobantes/tipos-combustible`);
+    return this.http.get<ApiResponse<TipoCombustibleResponse[]>>(
+      `${this.API_URL}/comprobantes/tipos-combustible`,
+    );
   }
 
   listarEstados(): Observable<ApiResponse<EstadoComprobanteResponse[]>> {
-    return this.http.get<ApiResponse<EstadoComprobanteResponse[]>>(`${this.API_URL}/comprobantes/estados`);
+    return this.http.get<ApiResponse<EstadoComprobanteResponse[]>>(
+      `${this.API_URL}/comprobantes/estados`,
+    );
   }
 
-  registrarComprobante(ruc: string, request: ComprobanteRequest, archivo: File): Observable<ApiResponse<string>> {
+  registrarComprobante(
+    ruc: string,
+    request: ComprobanteRequest,
+    archivo: File,
+  ): Observable<ApiResponse<string>> {
     const formData = new FormData();
     formData.append('request', JSON.stringify(request));
     formData.append('archivo', archivo);
-    
-    return this.http.post<ApiResponse<string>>(`${this.API_URL}/comprobantes`, formData, { params: { ruc } });
+
+    return this.http.post<ApiResponse<string>>(
+      `${this.API_URL}/comprobantes`,
+      formData,
+      { params: { ruc } },
+    );
   }
 
-  registrarComprobanteB(ruc: string, request: ComprobanteBRequest, archivo: File): Observable<ApiResponse<string>> {
+  registrarComprobanteB(
+    ruc: string,
+    request: ComprobanteBRequest,
+    archivo: File,
+  ): Observable<ApiResponse<string>> {
     const formData = new FormData();
     formData.append('request', JSON.stringify(request));
     formData.append('archivo', archivo);
-    
-    return this.http.post<ApiResponse<string>>(`${this.API_URL}/comprobantes/granel`, formData, { params: { ruc } });
+
+    return this.http.post<ApiResponse<string>>(
+      `${this.API_URL}/comprobantes/granel`,
+      formData,
+      { params: { ruc } },
+    );
   }
 
-  actualizarComprobante(comprobanteUuid: string, request: ActualizarComprobanteRequest): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${this.API_URL}/comprobantes/${comprobanteUuid}`, request);
+  actualizarComprobante(
+    comprobanteUuid: string,
+    request: ActualizarComprobanteRequest,
+  ): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(
+      `${this.API_URL}/comprobantes/${comprobanteUuid}`,
+      request,
+    );
   }
 
   eliminarComprobante(comprobanteUuid: string): Observable<ApiResponse<any>> {
-    return this.http.delete<ApiResponse<any>>(`${this.API_URL}/comprobantes/${comprobanteUuid}`);
+    return this.http.delete<ApiResponse<any>>(
+      `${this.API_URL}/comprobantes/${comprobanteUuid}`,
+    );
   }
 
-  registrarNotaCredito(request: NotaCreditoRequest): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.API_URL}/comprobantes/notas-credito`, request);
+  registrarNotaCredito(
+    request: NotaCreditoRequest,
+  ): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.API_URL}/comprobantes/notas-credito`,
+      request,
+    );
   }
 }

@@ -131,7 +131,8 @@
                 <button type="button" class="icon-button" title="Editar" aria-label="Editar comprobante"
                   (click)="abrirEditor(item)"><i class="fa-solid fa-pen"></i></button>
                 <button type="button" class="icon-button icon-button--danger" title="Retirar"
-                  aria-label="Retirar comprobante" (click)="retirar(item.comprobanteUuid)"><i class="fa-solid fa-trash"></i></button>
+                  aria-label="Retirar comprobante" (click)="retirar(item.comprobanteUuid)"><i
+                    class="fa-solid fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -153,8 +154,11 @@
     <div class="flex flex-col gap-2.5">
       @for (item of acumulados; track item.placa) {
       <article class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-[var(--shadow)]">
-        <div class="mb-1.5 flex justify-between gap-3 text-[13.5px] font-bold">
-          <span class="mono">{{ item.placa }}</span>
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-2.5 text-[13.5px] font-bold">
+          <span
+            class="mono inline-flex min-w-[94px] items-center justify-center rounded-lg border border-[var(--border-strong)] bg-[var(--surface-2)] px-3 py-1.5 text-[13px] font-extrabold uppercase tracking-[0.09em] text-[var(--text)] shadow-sm">
+            {{ item.placa }}
+          </span>
           <span class="mono text-[var(--text-2)]">{{ item.consumido | number:'1.2-2' }} / {{ item.tope | number:'1.2-2'
             }} gal</span>
         </div>
@@ -279,51 +283,39 @@
     <div class="editor-modal__body">
 
       @if (editorModo === 'crear') {
-      <div class="editor-section-title">0 · Archivo adjunto</div>
-      <div class="editor-grid">
-        <label class="editor-field editor-field--full">
-          <span>PDF o Imagen del Comprobante *</span>
-          <input type="file" (change)="onFileSelected($event)" accept="application/pdf,image/jpeg,image/png"
-            class="file-input" />
-        </label>
+      <div class="editor-section-title">1 · Comprobante</div>
+      <label for="receipt-file" class="receipt-upload" [class.receipt-upload--dragging]="isFileDragging"
+        [class.receipt-upload--error]="!!archivoError || (editorSubmitted && !archivoSeleccionado)"
+        (dragover)="onFileDragOver($event)" (dragleave)="onFileDragLeave($event)" (drop)="onFileDrop($event)">
+        <input id="receipt-file" type="file" (change)="onFileSelected($event)"
+          accept="application/pdf,image/jpeg,image/png" class="receipt-upload__input" />
+        <span class="receipt-upload__icon" aria-hidden="true">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i>
+        </span>
+        <strong>Arrastra el comprobante o haz clic para seleccionar</strong>
+        <small>PDF o imagen JPG/PNG · máx. 5 MB</small>
+      </label>
+      @if (archivoSeleccionado) {
+      <div class="receipt-file">
+        <i class="fa-solid fa-file-circle-check"></i>
+        <span>
+          <strong>{{ archivoSeleccionado.name }}</strong>
+          <small>{{ archivoSeleccionado.size / 1048576 | number:'1.2-2' }} MB</small>
+        </span>
+        <button type="button" aria-label="Quitar archivo" title="Quitar archivo" (click)="quitarArchivo()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       }
-
-      @if (forma === 'A') {
-      <div class="editor-section-title">1 · Vehículo y conductor</div>
-      <div class="editor-grid editor-grid--two">
-        <label class="editor-field">
-          <span>Placa *</span>
-          <select [(ngModel)]="model.placa" class="mono">
-            <option value="">Selecciona una placa…</option>
-            @for (v of vehiculos; track v.placa) {
-            <option [value]="v.placa">{{ v.placa }}</option>
-            }
-          </select>
-        </label>
-      </div>
-
-      <div class="editor-grid editor-grid--document">
-        <label class="editor-field">
-          <span>Documento</span>
-          <select [(ngModel)]="model.tipoDocumento">
-            <option value="DNI">DNI</option>
-            <option value="CE">CE</option>
-          </select>
-        </label>
-        <label class="editor-field">
-          <span>N.° documento</span>
-          <input [(ngModel)]="model.numeroDocumento" class="mono" />
-        </label>
-        <label class="editor-field">
-          <span>Licencia de conducir</span>
-          <input [(ngModel)]="model.licencia" class="mono" placeholder="Q00000000" />
-        </label>
+      @if (archivoError) {
+      <div class="receipt-upload-error" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ archivoError }}
       </div>
       }
+      }
 
-      <div class="editor-section-title">2 · Factura</div>
-      <div class="editor-grid editor-grid--invoice">
+      <div class="editor-section-title">{{ editorModo === 'crear' ? 2 : 1 }} · Factura</div>
+      <div class="editor-grid editor-grid--pair">
         <label class="editor-field">
           <span>Serie *</span>
           <input [(ngModel)]="model.serie" (input)="onEditorInvoiceSeriesInput($event)" maxlength="4" autocomplete="off"
@@ -342,8 +334,11 @@
             [class.editor-field-hint]="!editorSubmitted || isEditorInvoiceNumberValid">Entre 1 y 8 dígitos.</small>
         </label>
         <label class="editor-field">
-          <span>Emisión</span>
-          <input [(ngModel)]="model.emision" class="mono" placeholder="dd/mm/aaaa" />
+          <span>Emisión *</span>
+          <input [(ngModel)]="model.emision" (ngModelChange)="onEditorEmissionChange()" type="date" [max]="todayDate"
+            class="mono" [class.editor-field--invalid]="editorSubmitted && !isEditorEmissionValid" />
+          <small [class.editor-field-error]="editorSubmitted && !isEditorEmissionValid"
+            [class.editor-field-hint]="!editorSubmitted || isEditorEmissionValid">No puede ser posterior a hoy.</small>
         </label>
         <label class="editor-field">
           <span>Mes</span>
@@ -353,8 +348,49 @@
         </label>
       </div>
 
-      <div class="editor-section-title">3 · Grifo o Distribuidor</div>
-      <div class="editor-grid editor-grid--station">
+      @if (forma === 'A') {
+      <div class="editor-section-title">{{ editorModo === 'crear' ? 3 : 2 }} · Vehículo y conductor</div>
+      <div class="editor-grid editor-grid--pair">
+        <label class="editor-field">
+          <span>Placa *</span>
+          <select [(ngModel)]="model.placa" class="mono">
+            <option value="">Selecciona una placa…</option>
+            @for (v of vehiculos; track v.placa) {
+            <option [value]="v.placa">{{ v.placa }}</option>
+            }
+          </select>
+        </label>
+        <label class="editor-field">
+          <span>Tipo de documento *</span>
+          <select [(ngModel)]="model.tipoDocumento" (ngModelChange)="onEditorTipoDocumentoChange()">
+            <option value="DNI">DNI</option>
+            <option value="CE">CE</option>
+          </select>
+        </label>
+        <label class="editor-field">
+          <span>Número de documento *</span>
+          <input [(ngModel)]="model.numeroDocumento" (input)="onEditorNumeroDocumentoInput($event)"
+            [attr.inputmode]="editorDocumentoInputMode" [attr.maxlength]="editorDocumentoMaxLength"
+            [placeholder]="model.tipoDocumento === 'DNI' ? '12345678' : 'ABC123456'" class="mono uppercase"
+            [class.editor-field--invalid]="editorSubmitted && !isEditorDocumentoValid" />
+          <small [class.editor-field-error]="editorSubmitted && !isEditorDocumentoValid"
+            [class.editor-field-hint]="!editorSubmitted || isEditorDocumentoValid">{{ editorDocumentoHint }}</small>
+        </label>
+        <label class="editor-field">
+          <span>Licencia de conducir *</span>
+          <input [(ngModel)]="model.licencia" (input)="onEditorLicenseInput($event)" maxlength="9" autocomplete="off"
+            class="mono uppercase" placeholder="Q00000000"
+            [class.editor-field--invalid]="editorSubmitted && !isEditorLicenseValid" />
+          <small [class.editor-field-error]="editorSubmitted && !isEditorLicenseValid"
+            [class.editor-field-hint]="!editorSubmitted || isEditorLicenseValid">Una letra seguida de 8 dígitos.</small>
+        </label>
+      </div>
+      }
+
+      <div class="editor-section-title">
+        {{ editorModo === 'crear' ? (forma === 'A' ? 4 : 3) : (forma === 'A' ? 3 : 2) }} · Grifo o distribuidor
+      </div>
+      <div class="editor-grid editor-grid--pair">
         <label class="editor-field">
           <span>RUC del grifo *</span>
           <input [(ngModel)]="model.rucGrifo" (input)="onEditorStationRucInput($event)" inputmode="numeric"
@@ -368,10 +404,28 @@
           <span>Razón social</span>
           <input [(ngModel)]="model.razonSocial" placeholder="Opcional" />
         </label>
+        <label class="editor-field">
+          <span>Dirección</span>
+          <input [(ngModel)]="model.direccion" placeholder="Av. Principal 123" />
+        </label>
+        <label class="editor-field">
+          <span>Departamento</span>
+          <input [(ngModel)]="model.departamento" placeholder="Lima" />
+        </label>
+        <label class="editor-field">
+          <span>Provincia</span>
+          <input [(ngModel)]="model.provincia" placeholder="Lima" />
+        </label>
+        <label class="editor-field">
+          <span>Distrito</span>
+          <input [(ngModel)]="model.distrito" placeholder="Ate" />
+        </label>
       </div>
 
-      <div class="editor-section-title">4 · Combustible</div>
-      <div class="editor-grid editor-grid--fuel">
+      <div class="editor-section-title">
+        {{ editorModo === 'crear' ? (forma === 'A' ? 5 : 4) : (forma === 'A' ? 4 : 3) }} · Combustible
+      </div>
+      <div class="editor-grid editor-grid--pair">
         <label class="editor-field">
           <span>Tipo</span>
           <select [(ngModel)]="model.combustible">
@@ -388,11 +442,8 @@
           <span>Galones *</span>
           <input [(ngModel)]="model.galones" type="number" min="0.01" step="0.01" class="mono" placeholder="0.00" />
         </label>
-      </div>
-
-      <div class="editor-grid editor-grid--fuel mt-3">
         <label class="editor-field">
-          <span>Costo Total (S/)</span>
+          <span>Costo total (S/)</span>
           <input [(ngModel)]="model.costo" type="number" min="0.01" step="0.01" class="mono" placeholder="0.00" />
         </label>
       </div>
