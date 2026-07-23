@@ -75,35 +75,67 @@ export class VehiculoCargaComponent implements OnInit, OnDestroy {
   private readonly apiAuthService = inject(ApiAuthService);
   private readonly authService = inject(AuthService);
 
-  vehCatOpts = [
-    { value: '', label: 'Todas las categorías' },
-    { value: 'M2', label: 'M2' },
-    { value: 'M3', label: 'M3' },
-    { value: 'N2', label: 'N2' },
-  ];
+  vehCatOpts = [{ value: '', label: 'Todas las categorías' }];
 
-  vehValOpts = [
-    { value: '', label: 'Todos los estados' },
-    { value: 'VALIDADO', label: 'Validado' },
-    { value: 'EN_REVISION', label: 'En revisión' },
-    { value: 'RECHAZADO', label: 'Rechazado' },
-  ];
+  vehValOpts = [{ value: '', label: 'Todos los estados' }];
 
-  vehCreateCatOpts = [
-    { value: 'M1', label: 'M1 · Auto/particular' },
-    { value: 'M2', label: 'M2 · Minibús' },
-    { value: 'M3', label: 'M3 · Bus' },
-    { value: 'N1', label: 'N1 · Camioneta' },
-    { value: 'N2', label: 'N2 · Camión mediano' },
-    { value: 'N3', label: 'N3 · Camión pesado' },
-  ];
+  vehCreateCatOpts = [{ value: '', label: 'Seleccionar categoría...' }];
 
   newVehicle: VehicleFormModel = this.emptyVehicleForm();
 
   vehiclesView: Vehiculo[] = [];
 
   ngOnInit(): void {
+    this.cargarCategorias();
     this.cargarVehiculos();
+  }
+
+  private cargarCategorias(): void {
+    const cached = localStorage.getItem('sigt_vehiculo_categorias');
+    if (cached) {
+      try {
+        const list = JSON.parse(cached);
+        if (Array.isArray(list) && list.length > 0) {
+          this.actualizarOpcionesCategorias(list);
+          return;
+        }
+      } catch (e) {
+        console.error('Error al parsear categorías guardadas:', e);
+      }
+    }
+
+    this.apiVehiculoService.obtenerCategorias().subscribe({
+      next: (res) => {
+        const list = res?.data?.lista || res?.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          localStorage.setItem(
+            'sigt_vehiculo_categorias',
+            JSON.stringify(list),
+          );
+          this.actualizarOpcionesCategorias(list);
+        }
+      },
+      error: (err) =>
+        console.error('Error al cargar categorías vehiculares:', err),
+    });
+  }
+
+  private actualizarOpcionesCategorias(list: any[]): void {
+    this.vehCatOpts = [
+      { value: '', label: 'Todas las categorías' },
+      ...list.map((c) => ({
+        value: c.codigo,
+        label: `${c.codigo} · ${c.nombre}`,
+      })),
+    ];
+
+    this.vehCreateCatOpts = [
+      { value: '', label: 'Seleccionar categoría...' },
+      ...list.map((c) => ({
+        value: c.codigo,
+        label: `${c.codigo} · ${c.nombre}${c.topeGalones ? ' (Tope: ' + c.topeGalones + ' gal)' : ''}`,
+      })),
+    ];
   }
 
   ngOnDestroy(): void {
@@ -159,30 +191,33 @@ export class VehiculoCargaComponent implements OnInit, OnDestroy {
   }
 
   private toViewModel(vehiculo: VehiculoTransportista): Vehiculo {
-    const state = this.validationStyle(vehiculo.estadoValidacion);
+    const state = this.validationStyle(vehiculo?.estadoValidacion);
+    const topeNum = Number(vehiculo?.topeGalones);
+    const topeFmt = !isNaN(topeNum) ? topeNum.toFixed(2) : '0.00';
+
     return {
-      id: vehiculo.id,
-      placa: vehiculo.placa,
-      categoria: vehiculo.categoria,
-      topeFmt: vehiculo.topeGalones.toFixed(2),
-      nHab: vehiculo.numeroAutorizacion,
-      autEntidad: vehiculo.entidadAutorizadora ?? 'Pendiente',
-      tuc: vehiculo.tuc,
-      tucVencida: vehiculo.tucVencida,
+      id: vehiculo?.id,
+      placa: vehiculo?.placa ?? '',
+      categoria: vehiculo?.categoria ?? '',
+      topeFmt: topeFmt,
+      nHab: vehiculo?.numeroAutorizacion ?? '',
+      autEntidad: vehiculo?.entidadAutorizadora ?? 'Pendiente',
+      tuc: vehiculo?.tuc ?? '',
+      tucVencida: vehiculo?.tucVencida,
       estadoBg: state.bg,
       estadoColor: state.fg,
       estadoGlyph: state.glyph,
       estadoLabel: state.label,
-      propNom: vehiculo.propietario.nombre,
-      propTipo: vehiculo.propietario.tipoDocumento,
-      propDoc: vehiculo.propietario.numeroDocumento,
-      observed: vehiculo.estadoValidacion !== 'VALIDADO',
-      motivo: vehiculo.tucVencida
+      propNom: vehiculo?.propietario?.nombre ?? '',
+      propTipo: vehiculo?.propietario?.tipoDocumento ?? '',
+      propDoc: vehiculo?.propietario?.numeroDocumento ?? '',
+      observed: vehiculo?.estadoValidacion !== 'VALIDADO',
+      motivo: vehiculo?.tucVencida
         ? 'La TUC se encuentra vencida y requiere regularización.'
-        : vehiculo.estadoValidacion === 'RECHAZADO'
+        : vehiculo?.estadoValidacion === 'RECHAZADO'
           ? 'El vehículo presenta validaciones rechazadas.'
           : 'El vehículo continúa en proceso de validación.',
-      valChips: vehiculo.validaciones.map((validacion) => {
+      valChips: (vehiculo?.validaciones ?? []).map((validacion) => {
         const validationState = this.validationStyle(validacion.estado);
         return {
           label: this.validationFieldLabel(validacion.campo),
@@ -484,7 +519,7 @@ export class VehiculoCargaComponent implements OnInit, OnDestroy {
   private emptyVehicleForm(): VehicleFormModel {
     return {
       placa: '',
-      categoria: 'M1',
+      categoria: '',
       topeGalones: null,
       numeroAutorizacion: '',
       tuc: '',

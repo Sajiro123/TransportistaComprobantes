@@ -11,6 +11,7 @@ import {
 import { ApiAuthService } from '@core/services/api-auth.service';
 import { SessionService } from '@core/services/session.service';
 import { ApiComprobanteService } from '@core/services/api-comprobante.service';
+import { ApiVehiculoService } from '@core/services/api-vehiculo.service';
 import {
   ApiErrorResponse,
   EnviarOtpRegistroRequest,
@@ -724,6 +725,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly apiAuthService = inject(ApiAuthService);
   private readonly apiComprobanteService = inject(ApiComprobanteService);
+  private readonly apiVehiculoService = inject(ApiVehiculoService);
   private readonly apiRecuperacionService = inject(ApiRecuperacionService);
   private readonly sessionService = inject(SessionService);
   private readonly router = inject(Router);
@@ -871,6 +873,18 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
 
         this.apiAuthService.saveSession(res);
+
+        this.apiVehiculoService.obtenerCategorias().subscribe({
+          next: (catRes) => {
+            const list = catRes?.data?.lista || catRes?.data || [];
+            localStorage.setItem(
+              'sigt_vehiculo_categorias',
+              JSON.stringify(list),
+            );
+          },
+          error: (err) =>
+            console.error('Error al precargar categorías vehiculares:', err),
+        });
 
         const ruc = res.data?.numeroDocumento || '20412345670';
         this.apiComprobanteService.obtenerPerfil(ruc).subscribe({
