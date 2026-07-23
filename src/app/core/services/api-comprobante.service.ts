@@ -37,62 +37,15 @@ export class ApiComprobanteService {
   private readonly http = inject(HttpClient);
   private readonly decryptionService = inject(FieldDecryptionForgeService);
   private readonly API_URL = environment.API_COMPROBANTE_URL;
-  private readonly useMock = environment.API_COMPROBANTE_MOCK;
-
-
-  private mockPerfil: PerfilTransportista = {
-    datosEmpresa: {
-      razonSocial: 'Transportes Lima Sur S.A.C.',
-      ruc: '20512345678',
-      estadoCondicion: 'ACTIVO · HABIDO',
-      tipoEntidad: 'Persona jurídica',
-      autoridad: 'ATU – Autoridad de Transporte Urbano',
-      autorizacionVigente: true,
-    },
-    representanteLegal: {
-      nombresApellidos: 'Rosa María Vílchez Salazar',
-      tipoDocumento: 'DNI',
-      numeroDocumento: '40218765',
-    },
-    contacto: {
-      nombresApellidos: 'Rosa María Vílchez Salazar',
-      tipoDocumento: 'DNI',
-      numeroDocumento: '40218765',
-      correoElectronico: 'contacto@translimasur.pe',
-      telefono: '+51 987 654 321',
-    },
-  };
-
-  private mockCuentaAbono: CuentaAbono | null = {
-    banco: 'Banco de Crédito del Perú',
-    codigoCuentaInterbancario: '00212345678901234567',
-  };
 
   /**
    * Obtiene el perfil completo del transportista (empresa, representante, contacto).
    * @param ruc RUC del transportista
    */
   obtenerPerfil(ruc: string): Observable<PerfilTransportistaResponse> {
-    if (!this.useMock) {
-      return this.http.get<PerfilTransportistaResponse>(`${this.API_URL}/perfil`, {
-        params: { ruc },
-      });
-    }
-
-    this.mockPerfil.datosEmpresa.ruc = ruc || '20512345678';
-    const mockResponse: PerfilTransportistaResponse = {
-      data: {
-        lista: {
-          datosEmpresa: { ...this.mockPerfil.datosEmpresa },
-          representanteLegal: { ...this.mockPerfil.representanteLegal },
-          contacto: { ...this.mockPerfil.contacto },
-        },
-        respuesta: 'OK',
-        mensaje: 'Detalle de perfil del transportista obtenido correctamente (mockup)',
-      },
-    };
-
-    return of(mockResponse).pipe(delay(350));
+    return this.http.get<PerfilTransportistaResponse>(`${this.API_URL}/perfil`, {
+      params: { ruc },
+    });
   }
 
   /**
@@ -103,30 +56,11 @@ export class ApiComprobanteService {
     ruc: string,
     payload: ActualizarContactoRequest,
   ): Observable<ActualizarContactoResponse> {
-    if (!this.useMock) {
-      return this.http.put<ActualizarContactoResponse>(
-        `${this.API_URL}/perfil/contacto`,
-        payload,
-        { params: { ruc } },
-      );
-    }
-
-    this.mockPerfil.datosEmpresa.ruc = ruc;
-    this.mockPerfil.contacto = {
-      ...this.mockPerfil.contacto,
-      nombresApellidos: payload.nombresApellidos,
-      tipoDocumento: payload.tipoDocumento ?? this.mockPerfil.contacto.tipoDocumento,
-      numeroDocumento: payload.numeroDocumento ?? this.mockPerfil.contacto.numeroDocumento,
-      telefono: payload.telefono,
-    };
-
-    return of({
-      data: {
-        lista: { ...this.mockPerfil.contacto },
-        respuesta: 'OK',
-        mensaje: 'Contacto actualizado correctamente',
-      },
-    }).pipe(delay(650));
+    return this.http.put<ActualizarContactoResponse>(
+      `${this.API_URL}/perfil/contacto`,
+      payload,
+      { params: { ruc } },
+    );
   }
 
   /**
@@ -134,20 +68,10 @@ export class ApiComprobanteService {
    * GET /api_comprobante/perfil/cuenta-abono?ruc={ruc}
    */
   obtenerCuentaAbono(ruc: string): Observable<CuentaAbonoResponse> {
-    if (!this.useMock) {
-      return this.http.get<CuentaAbonoResponse>(
-        `${this.API_URL}/perfil/cuenta-abono`,
-        { params: { ruc } },
-      );
-    }
-
-    return of({
-      data: {
-        lista: this.mockCuentaAbono ? { ...this.mockCuentaAbono } : null,
-        respuesta: 'OK',
-        mensaje: 'Detalle de cuenta de abono obtenido correctamente',
-      },
-    }).pipe(delay(450));
+    return this.http.get<CuentaAbonoResponse>(
+      `${this.API_URL}/perfil/cuenta-abono`,
+      { params: { ruc } },
+    );
   }
 
   /**
@@ -158,24 +82,11 @@ export class ApiComprobanteService {
     ruc: string,
     payload: GuardarCuentaAbonoRequest,
   ): Observable<GuardarCuentaAbonoResponse> {
-    if (!this.useMock) {
-      return this.http.put<GuardarCuentaAbonoResponse>(
-        `${this.API_URL}/perfil/cuenta-abono`,
-        payload,
-        { params: { ruc } },
-      );
-    }
-
-    this.mockPerfil.datosEmpresa.ruc = ruc;
-    this.mockCuentaAbono = { ...payload };
-
-    return of({
-      data: {
-        lista: { ...this.mockCuentaAbono },
-        respuesta: 'OK',
-        mensaje: 'Cuenta de abono guardada correctamente',
-      },
-    }).pipe(delay(650));
+    return this.http.put<GuardarCuentaAbonoResponse>(
+      `${this.API_URL}/perfil/cuenta-abono`,
+      payload,
+      { params: { ruc } },
+    );
   }
 
   // ── Catálogos: Bancos ─────────────────────────────────────
@@ -183,22 +94,7 @@ export class ApiComprobanteService {
    * GET /api_comprobante/catalogos/bancos
    */
   obtenerBancos(): Observable<BancosResponse> {
-    if (!this.useMock) {
-      return this.http.get<BancosResponse>(`${this.API_URL}/catalogos/bancos`);
-    }
-    return of({
-      data: {
-        lista: [
-          { uuidBanco: 'b1', codigo: '002', nombre: 'Banco de Crédito del Perú', abreviatura: 'BCP', permiteOpe: true },
-          { uuidBanco: 'b2', codigo: '011', nombre: 'BBVA Perú', abreviatura: 'BBVA', permiteOpe: true },
-          { uuidBanco: 'b3', codigo: '003', nombre: 'Interbank', abreviatura: 'IBK', permiteOpe: true },
-          { uuidBanco: 'b4', codigo: '009', nombre: 'Scotiabank Perú', abreviatura: 'SCOTIA', permiteOpe: true },
-          { uuidBanco: 'b5', codigo: '018', nombre: 'Banco de la Nación', abreviatura: 'BN', permiteOpe: false },
-        ],
-        respuesta: 'OK',
-        mensaje: 'Bancos obtenidos correctamente (mock)',
-      },
-    }).pipe(delay(300));
+    return this.http.get<BancosResponse>(`${this.API_URL}/catalogos/bancos`);
   }
 
   // ── Cuenta Bancaria Transportista ────────────────────────
@@ -208,42 +104,23 @@ export class ApiComprobanteService {
    * Desencripta automáticamente los campos sensibles si vienen cifrados.
    */
   obtenerCuentaBancariaTransportista(transportistaId: number): Observable<CuentaBancariaTransportistaResponse> {
-    if (!this.useMock) {
-      return this.http.get<CuentaBancariaTransportistaResponse>(
-        `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`
-      ).pipe(
-        map((res) => {
-          if (res.data?.lista) {
-            const item = res.data.lista;
-            try {
-              if (item.cci) item.cci = this.decryptionService.decrypt(item.cci);
-              if (item.dniBeneficiario) item.dniBeneficiario = this.decryptionService.decrypt(item.dniBeneficiario);
-              if (item.nombreBeneficiario) item.nombreBeneficiario = this.decryptionService.decrypt(item.nombreBeneficiario);
-            } catch (err) {
-              console.error('Error al desencriptar datos de cuenta bancaria:', err);
-            }
+    return this.http.get<CuentaBancariaTransportistaResponse>(
+      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`
+    ).pipe(
+      map((res) => {
+        if (res.data?.lista) {
+          const item = res.data.lista;
+          try {
+            if (item.cci) item.cci = this.decryptionService.decrypt(item.cci);
+            if (item.dniBeneficiario) item.dniBeneficiario = this.decryptionService.decrypt(item.dniBeneficiario);
+            if (item.nombreBeneficiario) item.nombreBeneficiario = this.decryptionService.decrypt(item.nombreBeneficiario);
+          } catch (err) {
+            console.error('Error al desencriptar datos de cuenta bancaria:', err);
           }
-          return res;
-        })
-      );
-    }
-
-    return of({
-      data: {
-        lista: {
-          uuidCuentaBancaria: 'cb-12345',
-          transportistaId,
-          uuidBanco: 'b1',
-          tipoAbono: 'CCI',
-          cci: '00212345678912345678',
-          dniBeneficiario: null,
-          nombreBeneficiario: null,
-          estado: true,
-        },
-        respuesta: 'OK',
-        mensaje: 'Cuenta bancaria obtenida correctamente (mock)',
-      },
-    }).pipe(delay(400));
+        }
+        return res;
+      })
+    );
   }
 
   /**
@@ -253,27 +130,10 @@ export class ApiComprobanteService {
     transportistaId: number,
     payload: CuentaBancariaTransportistaRequest
   ): Observable<CuentaBancariaTransportistaResponse> {
-    if (!this.useMock) {
-      return this.http.post<CuentaBancariaTransportistaResponse>(
-        `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
-        payload
-      );
-    }
-    return of({
-      data: {
-        lista: {
-          uuidCuentaBancaria: 'cb-new-999',
-          transportistaId,
-          tipoAbono: payload.tipoAbonoId === 1 ? 'CCI' : 'OPE',
-          cci: payload.cci,
-          dniBeneficiario: payload.dniBeneficiario,
-          nombreBeneficiario: payload.nombreBeneficiario,
-          estado: true,
-        },
-        respuesta: 'OK',
-        mensaje: 'Cuenta bancaria registrada correctamente (mock)',
-      },
-    }).pipe(delay(600));
+    return this.http.post<CuentaBancariaTransportistaResponse>(
+      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
+      payload
+    );
   }
 
   /**
@@ -283,44 +143,19 @@ export class ApiComprobanteService {
     transportistaId: number,
     payload: CuentaBancariaTransportistaRequest
   ): Observable<CuentaBancariaTransportistaResponse> {
-    if (!this.useMock) {
-      return this.http.put<CuentaBancariaTransportistaResponse>(
-        `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
-        payload
-      );
-    }
-    return of({
-      data: {
-        lista: {
-          uuidCuentaBancaria: 'cb-updated-999',
-          transportistaId,
-          tipoAbono: payload.tipoAbonoId === 1 ? 'CCI' : 'OPE',
-          cci: payload.cci,
-          dniBeneficiario: payload.dniBeneficiario,
-          nombreBeneficiario: payload.nombreBeneficiario,
-          estado: true,
-        },
-        respuesta: 'OK',
-        mensaje: 'Cuenta bancaria actualizada correctamente (mock)',
-      },
-    }).pipe(delay(600));
+    return this.http.put<CuentaBancariaTransportistaResponse>(
+      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`,
+      payload
+    );
   }
 
   /**
    * DELETE /api_comprobante/transportistas/{transportistaId}/cuenta-bancaria
    */
   eliminarCuentaBancariaTransportista(transportistaId: number): Observable<{ data: { respuesta: string; mensaje: string } }> {
-    if (!this.useMock) {
-      return this.http.delete<{ data: { respuesta: string; mensaje: string } }>(
-        `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`
-      );
-    }
-    return of({
-      data: {
-        respuesta: 'OK',
-        mensaje: 'Cuenta bancaria eliminada correctamente (mock)',
-      },
-    }).pipe(delay(400));
+    return this.http.delete<{ data: { respuesta: string; mensaje: string } }>(
+      `${this.API_URL}/transportistas/${transportistaId}/cuenta-bancaria`
+    );
   }
 
   // ── Módulo de Comprobantes de Combustible ─────────────────

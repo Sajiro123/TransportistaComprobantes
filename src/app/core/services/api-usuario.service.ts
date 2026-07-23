@@ -16,25 +16,27 @@ export class ApiUsuarioService {
 
   /**
    * Actualiza el correo y el teléfono del usuario.
-   * El Token es inyectado automáticamente por el AuthInterceptor en las cabeceras.
+   * PUT /api_iam/usuario/actualizar/contacto
    */
-  actualizarCorreoTelefono(payload: UpdateEmailPhoneRequest): Observable<UpdateEmailPhoneResponse> {
-    return of({
-      data: {
-        respuesta: "OK",
-        mensaje: "Contacto actualizado correctamente (offline mock)"
-      },
-      mensaje: "Contacto actualizado correctamente (offline mock)"
-    });
+  actualizarCorreoTelefono(
+    payload: UpdateEmailPhoneRequest,
+  ): Observable<UpdateEmailPhoneResponse> {
+    return this.http.put<UpdateEmailPhoneResponse>(
+      `${this.API_URL}/usuario/actualizar/contacto`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
   /**
    * Actualiza la contraseña del usuario.
+   * PUT /api_iam/usuario/actualizar/contrasena
    */
   actualizarContrasena(payload: any): Observable<any> {
-    return of({
-      respuesta: "OK",
-      mensaje: "Contraseña actualizada correctamente (offline mock)"
-    });
+    return this.http.put<any>(
+      `${this.API_URL}/usuario/actualizar/contrasena`,
+      payload,
+      { withCredentials: true },
+    );
   }
 }
