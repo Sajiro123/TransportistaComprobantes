@@ -15,4 +15,5 @@ export const environment = {
   RECAPTCHA_SITE_KEY:
     runtime.RECAPTCHA_SITE_KEY || '6Ldu6FUrAAAAADnOURKYc9E_uUbGBRC35_ntvznt',
   ENCRYPTION_PRIVATE_KEY: runtime.ENCRYPTION_PRIVATE_KEY || '',
+  appId: runtime.appId || 'APP_COMPROBANTE',
 } satisfies AppEnvironment;

@@ -10,7 +10,12 @@ import {
 } from '@core/services/auth.service';
 import { ApiAuthService } from '@core/services/api-auth.service';
 import { SessionService } from '@core/services/session.service';
-import { ApiErrorResponse, EnviarOtpRegistroRequest, LoginResponse } from '@core/models/api.models';
+import { ApiComprobanteService } from '@core/services/api-comprobante.service';
+import {
+  ApiErrorResponse,
+  EnviarOtpRegistroRequest,
+  LoginResponse,
+} from '@core/models/api.models';
 import { ApiRecuperacionService } from '@core/services/api-recuperacion.service';
 import { ThemeService } from '@core/services/theme.service';
 import Swal from 'sweetalert2';
@@ -22,10 +27,10 @@ declare const grecaptcha: any;
 type FormView = 'login' | 'registro' | 'recuperacion';
 
 @Component({
-    selector: 'app-login',
-    imports: [CommonModule, FormsModule],
-    templateUrl: './login.component.html',
-    styleUrl: './login.component.scss'
+  selector: 'app-login',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent implements OnInit, OnDestroy {
   // ── Theme State ───────────────────────────────────────
@@ -76,27 +81,25 @@ export class LoginComponent implements OnInit, OnDestroy {
     return 'Número de RUC';
   }
 
-  get loginDocumentPlaceholder(): string {
-    return 'Ingrese su número de RUC';
-  }
+  // get loginDocumentPlaceholder(): string {
+  //   return 'Ingrese su número de RUC';
+  // }
 
-  get loginDocumentMaxLength(): number {
-    return 11;
-  }
+  // get loginDocumentMaxLength(): number {
+  //   return 11;
+  // }
 
-  get loginDocumentError(): string {
-    if (!this.loginDocumentTouched) return '';
-    if (!this.loginEmail) return 'Ingrese su número de RUC.';
-    return isValidRuc(this.loginEmail)
-      ? ''
-      : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
-  }
+  // get loginDocumentError(): string {
+  //   if (!this.loginDocumentTouched) return '';
+  //   if (!this.loginEmail) return 'Ingrese su número de RUC.';
+  //   return isValidRuc(this.loginEmail)
+  //     ? ''
+  //     : 'El RUC debe tener 11 dígitos y comenzar con 10, 15, 17 o 20.';
+  // }
 
   onLoginDocumentInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const numericValue = input.value.replace(/\D/g, '').slice(0, 11);
-    input.value = numericValue;
-    this.loginEmail = numericValue;
+    this.loginEmail = input.value;
     this.loginDocumentTouched = true;
   }
 
@@ -104,17 +107,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (event.key === 'Enter') {
       this.onLoginKeydown(event);
       return;
-    }
-
-    const allowedKeys = [
-      'Backspace', 'Delete', 'Tab', 'Escape', 'ArrowLeft', 'ArrowRight',
-      'Home', 'End',
-    ];
-    const isShortcut = (event.ctrlKey || event.metaKey) &&
-      ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase());
-
-    if (!/^\d$/.test(event.key) && !allowedKeys.includes(event.key) && !isShortcut) {
-      event.preventDefault();
     }
   }
 
@@ -137,8 +129,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   registrationSendingOtp = false;
   registrationVerifying = false;
   registrationResendCooldown = 0;
-  private registrationCooldownInterval: ReturnType<typeof setInterval> | null = null;
-  private registrationValidationTimeout: ReturnType<typeof setTimeout> | null = null;
+  private registrationCooldownInterval: ReturnType<typeof setInterval> | null =
+    null;
+  private registrationValidationTimeout: ReturnType<typeof setTimeout> | null =
+    null;
 
   get registrationRucError(): string {
     if (!this.registrationRucTouched) return '';
@@ -157,7 +151,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   get registrationEmailError(): string {
     if (!this.registrationSubmitted) return '';
     if (!this.registrationEmail.trim()) return 'Ingrese el correo electrónico.';
-    return isValidEmail(this.registrationEmail) ? '' : 'Ingrese un correo electrónico válido.';
+    return isValidEmail(this.registrationEmail)
+      ? ''
+      : 'Ingrese un correo electrónico válido.';
   }
 
   get registrationPhoneError(): string {
@@ -168,7 +164,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       : 'Ingrese un celular peruano de 9 dígitos que comience con 9.';
   }
 
-  private readonly PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,128}$/;
+  private readonly PASSWORD_REGEX =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,128}$/;
 
   get registrationPasswordError(): string {
     if (!this.registrationSubmitted) return '';
@@ -192,31 +189,43 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.registrationValidating = true;
 
     const doValidate = (recaptchaToken?: string) => {
-      this.apiAuthService.validarRuc(this.registrationRuc, recaptchaToken).subscribe({
-        next: (res) => {
-          this.ngZone.run(() => {
-            this.registrationValidating = false;
-            if (res.elegible) {
-              this.registrationRucValidated = true;
-              this.registrationCompanyName = res.razonSocial;
-              this.registrationRazonSocial = res.razonSocial;
-            } else {
-              this.showAlert(res.mensaje || 'El RUC no es elegible.', 'error');
-            }
-          });
-        },
-        error: (err: ApiErrorResponse) => {
-          this.ngZone.run(() => {
-            this.registrationValidating = false;
-            this.showAlert(err?.descripcion || err?.message || 'Error al validar el RUC.', 'error');
-          });
-        },
-      });
+      this.apiAuthService
+        .validarRuc(this.registrationRuc, recaptchaToken)
+        .subscribe({
+          next: (res) => {
+            this.ngZone.run(() => {
+              this.registrationValidating = false;
+              if (res.elegible) {
+                this.registrationRucValidated = true;
+                this.registrationCompanyName = res.razonSocial;
+                this.registrationRazonSocial = res.razonSocial;
+              } else {
+                this.showAlert(
+                  res.mensaje || 'El RUC no es elegible.',
+                  'error',
+                );
+              }
+            });
+          },
+          error: (err: any) => {
+            this.ngZone.run(() => {
+              this.registrationValidating = false;
+              const msg =
+                err?.error?.message ||
+                err?.error?.descripcion ||
+                err?.descripcion ||
+                err?.message ||
+                'Error al validar el RUC.';
+              this.showAlert(msg, 'error');
+            });
+          },
+        });
     };
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'register' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'register' })
           .then((token: string) => doValidate(token))
           .catch(() => doValidate());
       });
@@ -252,7 +261,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onRegistrationPhoneInput(): void {
-    this.registrationPhone = this.registrationPhone.replace(/\D/g, '').slice(0, 9);
+    this.registrationPhone = this.registrationPhone
+      .replace(/\D/g, '')
+      .slice(0, 9);
   }
 
   submitDummyRegistration(): void {
@@ -297,10 +308,16 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.startResendCooldown(60);
           });
         },
-        error: (err: ApiErrorResponse) => {
+        error: (err: any) => {
           this.ngZone.run(() => {
             this.registrationSendingOtp = false;
-            this.showAlert(err?.descripcion || err?.message || 'Error al enviar el código.', 'error');
+            const msg =
+              err?.error?.message ||
+              err?.error?.descripcion ||
+              err?.descripcion ||
+              err?.message ||
+              'Error al enviar el código.';
+            this.showAlert(msg, 'error');
           });
         },
       });
@@ -308,7 +325,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'register' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'register' })
           .then((token: string) => doSend(token))
           .catch(() => doSend());
       });
@@ -337,7 +355,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onRegistrationCodeInput(): void {
-    this.registrationCode = this.registrationCode.replace(/\D/g, '').slice(0, 6);
+    this.registrationCode = this.registrationCode
+      .replace(/\D/g, '')
+      .slice(0, 6);
     this.registrationCodeError = '';
   }
 
@@ -351,32 +371,39 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.registrationCodeError = '';
 
     const doVerify = (token?: string) => {
-      this.apiAuthService.verificarOtp(
-        this.registrationEmail.trim(),
-        this.registrationCode,
-        token,
-      ).subscribe({
-        next: () => {
-          this.ngZone.run(() => {
-            this.registrationVerifying = false;
-            this.registrationCodeError = '';
-            this.registrationStage = 'success';
-            this.stopResendCooldown();
-          });
-        },
-        error: (err: ApiErrorResponse) => {
-          this.ngZone.run(() => {
-            this.registrationVerifying = false;
-            this.registrationCodeError =
-              err?.descripcion || err?.message || 'Código incorrecto. Revísalo e intenta de nuevo.';
-          });
-        },
-      });
+      this.apiAuthService
+        .verificarOtp(
+          this.registrationEmail.trim(),
+          this.registrationCode,
+          token,
+        )
+        .subscribe({
+          next: () => {
+            this.ngZone.run(() => {
+              this.registrationVerifying = false;
+              this.registrationCodeError = '';
+              this.registrationStage = 'success';
+              this.stopResendCooldown();
+            });
+          },
+          error: (err: any) => {
+            this.ngZone.run(() => {
+              this.registrationVerifying = false;
+              this.registrationCodeError =
+                err?.error?.message ||
+                err?.error?.descripcion ||
+                err?.descripcion ||
+                err?.message ||
+                'Código incorrecto. Revísalo e intenta de nuevo.';
+            });
+          },
+        });
     };
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'register' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'register' })
           .then((token: string) => doVerify(token))
           .catch(() => doVerify());
       });
@@ -386,7 +413,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   resendDummyRegistrationCode(): void {
-    if (this.registrationResendCooldown > 0 || this.registrationSendingOtp) return;
+    if (this.registrationResendCooldown > 0 || this.registrationSendingOtp)
+      return;
     this.registrationCode = '';
     this.registrationCodeError = '';
     this.registrationCodeResent = false;
@@ -411,11 +439,15 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.startResendCooldown(60);
           });
         },
-        error: (err: ApiErrorResponse) => {
+        error: (err: any) => {
           this.ngZone.run(() => {
             this.registrationSendingOtp = false;
             this.registrationCodeError =
-              err?.descripcion || err?.message || 'No se pudo reenviar el código.';
+              err?.error?.message ||
+              err?.error?.descripcion ||
+              err?.descripcion ||
+              err?.message ||
+              'No se pudo reenviar el código.';
           });
         },
       });
@@ -423,7 +455,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'register' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'register' })
           .then((token: string) => doResend(token))
           .catch(() => doResend());
       });
@@ -650,7 +683,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   recoverySaving = false;
   recoveryResendCooldown = 0;
   recoveryCorreoEnmascarado: string | null = null;
-  private recoveryCooldownInterval: ReturnType<typeof setInterval> | null = null;
+  private recoveryCooldownInterval: ReturnType<typeof setInterval> | null =
+    null;
 
   get recoveryRucError(): string {
     if (!this.recRucTouched) return '';
@@ -689,6 +723,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   private readonly authService = inject(AuthService);
   private readonly apiAuthService = inject(ApiAuthService);
+  private readonly apiComprobanteService = inject(ApiComprobanteService);
   private readonly apiRecuperacionService = inject(ApiRecuperacionService);
   private readonly sessionService = inject(SessionService);
   private readonly router = inject(Router);
@@ -782,18 +817,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     const usuario = this.loginEmail.trim();
     const password = this.loginPassword;
 
-    if (this.loginDocumentError) {
-      this.showAlert(this.loginDocumentError, 'error');
-      return;
-    }
+    // if (this.loginDocumentError) {
+    //   this.showAlert(this.loginDocumentError, 'error');
+    //   return;
+    // }
 
     if (!password) {
       this.showAlert('Ingrese su contraseña.', 'error');
-      return;
-    }
-
-    if (usuario === this.mockRuc && password === this.mockPassword) {
-      this.loginWithMockData();
       return;
     }
 
@@ -829,17 +859,50 @@ export class LoginComponent implements OnInit, OnDestroy {
   ): void {
     this.apiAuthService.login(usuario, password, recaptchaToken).subscribe({
       next: (res) => {
+        if (usuario.trim().toLowerCase() === 'admin') {
+          if (res && res.data) {
+            res.data.numeroDocumento = '20412345670';
+            res.data.tipoDocumento = 'RUC';
+            res.data.razonSocial = 'Transportes Sajiro S.A.C.';
+            res.data.nombrePersona = 'Administrador';
+            res.data.apellidoPaterno = 'Sajiro';
+            res.data.apellidoMaterno = 'Mock';
+          }
+        }
+
         this.apiAuthService.saveSession(res);
-        // Iniciar el timer de sesión de 15 minutos
-        this.sessionService.startSession();
-        // Redirigir al perfil
-        this.router.navigate(['/perfil']);
+
+        const ruc = res.data?.numeroDocumento || '20412345670';
+        this.apiComprobanteService.obtenerPerfil(ruc).subscribe({
+          next: (perfilRes) => {
+            if (perfilRes && perfilRes.data && perfilRes.data.lista) {
+              localStorage.setItem(
+                'perfil',
+                JSON.stringify(perfilRes.data.lista),
+              );
+              localStorage.setItem(
+                'sigt_perfil_DU004',
+                JSON.stringify(perfilRes.data.lista),
+              );
+            }
+            this.sessionService.startSession();
+            this.router.navigate(['/perfil']);
+          },
+          error: (err) => {
+            console.error('Error al precargar el perfil en login:', err);
+            this.sessionService.startSession();
+            this.router.navigate(['/perfil']);
+          },
+        });
       },
-      error: (err: ApiErrorResponse) => {
+      error: (err: any) => {
         this.isLoading = false;
-        // Usa el campo 'descripcion' del API si está disponible
         const msg =
-          err?.descripcion || err?.message || 'Error al iniciar sesión.';
+          err?.error?.message ||
+          err?.error?.descripcion ||
+          err?.descripcion ||
+          err?.message ||
+          'Error al iniciar sesión.';
         this.showAlert(msg, 'error');
       },
     });
@@ -948,30 +1011,41 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.recoverySendingOtp = true;
 
     const doSend = (token?: string) => {
-      this.apiRecuperacionService.enviarOtp({ ruc: this.recRuc, recaptchaToken: token }).subscribe({
-        next: (res) => {
-          this.ngZone.run(() => {
-            this.recoverySendingOtp = false;
-            this.recoveryStage = 'code';
-            this.recoveryCode = '';
-            this.recoveryCodeError = '';
-            this.recoveryCodeResent = false;
-            this.recoveryCorreoEnmascarado = res.data.correoEnmascarado;
-            this.startRecoveryResendCooldown(res.data.expiraEnSegundos || 180);
-          });
-        },
-        error: (err: ApiErrorResponse) => {
-          this.ngZone.run(() => {
-            this.recoverySendingOtp = false;
-            this.showAlert(err?.descripcion || err?.message || 'Error al enviar código de recuperación.', 'error');
-          });
-        }
-      });
+      this.apiRecuperacionService
+        .enviarOtp({ ruc: this.recRuc, recaptchaToken: token })
+        .subscribe({
+          next: (res) => {
+            this.ngZone.run(() => {
+              this.recoverySendingOtp = false;
+              this.recoveryStage = 'code';
+              this.recoveryCode = '';
+              this.recoveryCodeError = '';
+              this.recoveryCodeResent = false;
+              this.recoveryCorreoEnmascarado = res.data.correoEnmascarado;
+              this.startRecoveryResendCooldown(
+                res.data.expiraEnSegundos || 180,
+              );
+            });
+          },
+          error: (err: any) => {
+            this.ngZone.run(() => {
+              this.recoverySendingOtp = false;
+              const msg =
+                err?.error?.message ||
+                err?.error?.descripcion ||
+                err?.descripcion ||
+                err?.message ||
+                'Error al enviar código de recuperación.';
+              this.showAlert(msg, 'error');
+            });
+          },
+        });
     };
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'reset_password' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'reset_password' })
           .then((token: string) => doSend(token))
           .catch(() => doSend());
       });
@@ -1001,30 +1075,40 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.recoveryVerifying = true;
 
     const doVerify = (token?: string) => {
-      this.apiRecuperacionService.verificarOtp({ ruc: this.recRuc, otp: this.recoveryCode, recaptchaToken: token }).subscribe({
-        next: () => {
-          this.ngZone.run(() => {
-            this.recoveryVerifying = false;
-            this.recoveryCodeError = '';
-            this.recoveryStage = 'password';
-            this.recoveryNewPassword = '';
-            this.recoveryConfirmPassword = '';
-            this.recoveryPasswordSubmitted = false;
-            this.stopRecoveryResendCooldown();
-          });
-        },
-        error: (err: ApiErrorResponse) => {
-          this.ngZone.run(() => {
-            this.recoveryVerifying = false;
-            this.recoveryCodeError = err?.descripcion || err?.message || 'Código incorrecto o expirado.';
-          });
-        }
-      });
+      this.apiRecuperacionService
+        .verificarOtp({
+          ruc: this.recRuc,
+          otp: this.recoveryCode,
+          recaptchaToken: token,
+        })
+        .subscribe({
+          next: () => {
+            this.ngZone.run(() => {
+              this.recoveryVerifying = false;
+              this.recoveryCodeError = '';
+              this.recoveryStage = 'password';
+              this.recoveryNewPassword = '';
+              this.recoveryConfirmPassword = '';
+              this.recoveryPasswordSubmitted = false;
+              this.stopRecoveryResendCooldown();
+            });
+          },
+          error: (err: any) => {
+            this.ngZone.run(() => {
+              this.recoveryVerifying = false;
+              this.recoveryCodeError =
+                err?.error?.message ||
+                err?.error?.descripcion ||
+                'Código incorrecto o expirado.';
+            });
+          },
+        });
     };
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'reset_password' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'reset_password' })
           .then((token: string) => doVerify(token))
           .catch(() => doVerify());
       });
@@ -1035,7 +1119,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   resendRecoveryCode(): void {
     if (this.recoveryResendCooldown > 0 || this.recoverySendingOtp) return;
-    
+
     this.recoveryCode = '';
     this.recoveryCodeError = '';
     this.recoveryCodeResent = false;
@@ -1043,27 +1127,34 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.recoverySendingOtp = true;
 
     const doResend = (token?: string) => {
-      this.apiRecuperacionService.enviarOtp({ ruc: this.recRuc, recaptchaToken: token }).subscribe({
-        next: (res) => {
-          this.ngZone.run(() => {
-            this.recoverySendingOtp = false;
-            this.recoveryCodeResent = true;
-            this.recoveryCorreoEnmascarado = res.data.correoEnmascarado;
-            this.startRecoveryResendCooldown(60); // Cooldown de 60s
-          });
-        },
-        error: (err: ApiErrorResponse) => {
-          this.ngZone.run(() => {
-            this.recoverySendingOtp = false;
-            this.recoveryCodeError = err?.descripcion || err?.message || 'Error al reenviar código.';
-          });
-        }
-      });
+      this.apiRecuperacionService
+        .enviarOtp({ ruc: this.recRuc, recaptchaToken: token })
+        .subscribe({
+          next: (res) => {
+            this.ngZone.run(() => {
+              this.recoverySendingOtp = false;
+              this.recoveryCodeResent = true;
+              this.recoveryCorreoEnmascarado = res.data.correoEnmascarado;
+              this.startRecoveryResendCooldown(60); // Cooldown de 60s
+            });
+          },
+          error: (err: any) => {
+            this.ngZone.run(() => {
+              this.recoverySendingOtp = false;
+              this.recoveryCodeError =
+                err?.error?.message ||
+                err?.error?.descripcion ||
+                err?.message ||
+                'Error al reenviar código.';
+            });
+          },
+        });
     };
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'reset_password' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'reset_password' })
           .then((token: string) => doResend(token))
           .catch(() => doResend());
       });
@@ -1110,40 +1201,49 @@ export class LoginComponent implements OnInit, OnDestroy {
   saveRecoveryPassword(): void {
     this.clearAlert();
     this.recoveryPasswordSubmitted = true;
-    if (this.recoveryNewPasswordError || this.recoveryConfirmPasswordError) return;
+    if (this.recoveryNewPasswordError || this.recoveryConfirmPasswordError)
+      return;
 
     if (this.recoverySaving) return;
     this.recoverySaving = true;
 
     const doSave = (token?: string) => {
-      this.apiRecuperacionService.actualizarClave({
-        nuevaClave: this.recoveryNewPassword,
-        confirmarClave: this.recoveryConfirmPassword,
-        recaptchaToken: token
-      }).subscribe({
-        next: (res) => {
-          this.ngZone.run(() => {
-            this.recoverySaving = false;
-            this.recoveryStage = 'success';
-          });
-        },
-        error: (err: ApiErrorResponse) => {
-          this.ngZone.run(() => {
-            this.recoverySaving = false;
-            this.showAlert(err?.descripcion || err?.message || 'Error al actualizar la contraseña.', 'error');
-            if (err?.code === 'REC_003') {
-              setTimeout(() => {
-                this.openRecovery();
-              }, 2000);
-            }
-          });
-        }
-      });
+      this.apiRecuperacionService
+        .actualizarClave({
+          nuevaClave: this.recoveryNewPassword,
+          confirmarClave: this.recoveryConfirmPassword,
+          recaptchaToken: token,
+        })
+        .subscribe({
+          next: (res) => {
+            this.ngZone.run(() => {
+              this.recoverySaving = false;
+              this.recoveryStage = 'success';
+            });
+          },
+          error: (err: any) => {
+            this.ngZone.run(() => {
+              this.recoverySaving = false;
+              const msg =
+                err?.error?.message ||
+                err?.error?.descripcion ||
+                err?.message ||
+                'Error al actualizar la contraseña.';
+              this.showAlert(msg, 'error');
+              if (err?.error?.code === 'REC_003' || err?.code === 'REC_003') {
+                setTimeout(() => {
+                  this.openRecovery();
+                }, 2000);
+              }
+            });
+          },
+        });
     };
 
     if (typeof grecaptcha !== 'undefined') {
       grecaptcha.ready(() => {
-        grecaptcha.execute(this.recaptchaSiteKey, { action: 'reset_password' })
+        grecaptcha
+          .execute(this.recaptchaSiteKey, { action: 'reset_password' })
           .then((token: string) => doSave(token))
           .catch(() => doSave());
       });

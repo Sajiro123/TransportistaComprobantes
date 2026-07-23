@@ -38,8 +38,15 @@ export class ApiAuthService {
    */
   login(usuario: string, password: string, recaptchaToken?: string): Observable<LoginResponse> {
     const body: LoginRequest = { usuario, password, recaptchaToken };
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (environment.appId) {
+      headers['X-App-Id'] = environment.appId;
+    }
+
     return this.http
-      .post<LoginResponse>(`${this.baseUrl}/auth/login`, body)
+      .post<LoginResponse>(`${this.baseUrl}/auth/login`, body, { headers, withCredentials: true })
       .pipe(
         map(res => {
           if (res && res.data) {
@@ -63,7 +70,7 @@ export class ApiAuthService {
       .post<ApiResponseDto<ValidarRucResponse>>(`${this.baseUrl}/registro/validar-ruc`, body)
       .pipe(
         map(res => res.data),
-        catchError(this.handleError),
+        catchError(this.handleError.bind(this)),
       );
   }
 
@@ -76,7 +83,7 @@ export class ApiAuthService {
       .post<ApiResponseDto<EnviarOtpRegistroResponse>>(`${this.baseUrl}/registro/otp/enviar`, payload)
       .pipe(
         map(res => res.data),
-        catchError(this.handleError),
+        catchError(this.handleError.bind(this)),
       );
   }
 
@@ -90,7 +97,7 @@ export class ApiAuthService {
       .post<ApiResponseDto<VerificarOtpRegistroResponse>>(`${this.baseUrl}/registro/otp/verificar`, body)
       .pipe(
         map(res => res.data),
-        catchError(this.handleError),
+        catchError(this.handleError.bind(this)),
       );
   }
 

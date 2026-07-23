@@ -40,6 +40,11 @@ export const authInterceptor: HttpInterceptorFn = (
 
   const isLoginRequest = req.url.includes('/auth/login');
   const isRefreshRequest = req.url.includes('/auth/refresh');
+  const isPublicRoute =
+    isLoginRequest ||
+    isRefreshRequest ||
+    req.url.includes('/registro/') ||
+    req.url.includes('/recuperacion/');
 
   // Envía credenciales (cookies HttpOnly) en cada petición
   const authReq = req.clone({ withCredentials: true });
@@ -52,7 +57,7 @@ export const authInterceptor: HttpInterceptorFn = (
         errMessage.toLowerCase().includes('token inválido o expirado') ||
         errMessage.toLowerCase().includes('token expirado');
 
-      if (isTokenExpired && !isLoginRequest && !isRefreshRequest) {
+      if (isTokenExpired && !isPublicRoute) {
         if (!isRefreshing) {
           isRefreshing = true;
           refreshTokenSubject.next(null);
