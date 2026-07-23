@@ -270,7 +270,7 @@
 .editor-modal {
   display: flex;
   width: 100%;
-  max-width: 640px;
+  max-width: 720px;
   max-height: 90vh;
   flex-direction: column;
   overflow: hidden;
@@ -320,11 +320,134 @@
   text-transform: uppercase;
 }
 
+.receipt-upload {
+  display: flex;
+  min-height: 150px;
+  margin-bottom: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  padding: 22px 18px;
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+
+  &:hover,
+  &--dragging {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+
+  &--error {
+    border-color: var(--bad);
+  }
+
+  > strong {
+    font-size: 13.5px;
+    font-weight: 700;
+  }
+
+  > small {
+    margin-top: 3px;
+    color: var(--text-3);
+    font-size: 12px;
+  }
+}
+
+.receipt-upload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.receipt-upload__icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 9px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 19px;
+}
+
+.receipt-file {
+  display: flex;
+  margin: 8px 0 18px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--ok);
+  border-radius: 10px;
+  background: var(--ok-bg);
+  padding: 10px 12px;
+  color: var(--ok);
+
+  > i {
+    font-size: 18px;
+  }
+
+  > span {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+
+    strong {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 12.5px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      margin-top: 1px;
+      color: var(--text-3);
+      font-size: 10.5px;
+    }
+  }
+
+  button {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+  }
+}
+
+.receipt-upload-error {
+  display: flex;
+  margin: 7px 0 18px;
+  align-items: center;
+  gap: 6px;
+  color: var(--bad);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
 .editor-grid {
   display: grid;
   gap: 14px;
   margin-bottom: 18px;
 
+  &--pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   &--two { grid-template-columns: repeat(2, 1fr); margin-bottom: 14px; }
   &--document { grid-template-columns: .7fr 1fr 1fr; }
   &--invoice { grid-template-columns: .8fr 1.1fr 1fr 1fr; }

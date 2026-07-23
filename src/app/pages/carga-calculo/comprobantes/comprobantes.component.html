@@ -260,18 +260,79 @@
       <div class="editor-modal__body">
 
         @if (editorModo === 'crear') {
-          <div class="editor-section-title">0 · Archivo adjunto</div>
-          <div class="editor-grid">
-            <label class="editor-field editor-field--full">
-              <span>PDF o Imagen del Comprobante *</span>
-              <input type="file" (change)="onFileSelected($event)" accept="application/pdf,image/jpeg,image/png" class="file-input" />
-            </label>
+          <div class="editor-section-title">1 · Comprobante</div>
+          <label
+            for="receipt-file"
+            class="receipt-upload"
+            [class.receipt-upload--dragging]="isFileDragging"
+            [class.receipt-upload--error]="!!archivoError || (editorSubmitted && !archivoSeleccionado)"
+            (dragover)="onFileDragOver($event)"
+            (dragleave)="onFileDragLeave($event)"
+            (drop)="onFileDrop($event)">
+            <input id="receipt-file" type="file" (change)="onFileSelected($event)"
+              accept="application/pdf,image/jpeg,image/png" class="receipt-upload__input" />
+            <span class="receipt-upload__icon" aria-hidden="true">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            </span>
+            <strong>Arrastra el comprobante o haz clic para seleccionar</strong>
+            <small>PDF o imagen JPG/PNG · máx. 5 MB</small>
+          </label>
+          @if (archivoSeleccionado) {
+          <div class="receipt-file">
+            <i class="fa-solid fa-file-circle-check"></i>
+            <span>
+              <strong>{{ archivoSeleccionado.name }}</strong>
+              <small>{{ archivoSeleccionado.size / 1048576 | number:'1.2-2' }} MB</small>
+            </span>
+            <button type="button" aria-label="Quitar archivo" title="Quitar archivo" (click)="quitarArchivo()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
+          }
+          @if (archivoError) {
+          <div class="receipt-upload-error" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ archivoError }}
+          </div>
+          }
         }
 
+        <div class="editor-section-title">{{ editorModo === 'crear' ? 2 : 1 }} · Factura</div>
+        <div class="editor-grid editor-grid--pair">
+          <label class="editor-field">
+            <span>Serie *</span>
+            <input [(ngModel)]="model.serie" (input)="onEditorInvoiceSeriesInput($event)" maxlength="4"
+              autocomplete="off" class="mono uppercase" placeholder="F001"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorInvoiceSeriesValid" />
+            <small [class.editor-field-error]="editorSubmitted && !isEditorInvoiceSeriesValid"
+              [class.editor-field-hint]="!editorSubmitted || isEditorInvoiceSeriesValid">Formato obligatorio: F001.</small>
+          </label>
+          <label class="editor-field">
+            <span>Número *</span>
+            <input [(ngModel)]="model.numero" (input)="onEditorInvoiceNumberInput($event)" inputmode="numeric"
+              maxlength="8" autocomplete="off" class="mono" placeholder="0001234"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorInvoiceNumberValid" />
+            <small [class.editor-field-error]="editorSubmitted && !isEditorInvoiceNumberValid"
+              [class.editor-field-hint]="!editorSubmitted || isEditorInvoiceNumberValid">Entre 1 y 8 dígitos.</small>
+          </label>
+          <label class="editor-field">
+            <span>Emisión *</span>
+            <input [(ngModel)]="model.emision" (ngModelChange)="onEditorEmissionChange()" type="date"
+              [max]="todayDate" class="mono"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorEmissionValid" />
+            <small [class.editor-field-error]="editorSubmitted && !isEditorEmissionValid"
+              [class.editor-field-hint]="!editorSubmitted || isEditorEmissionValid">No puede ser posterior a hoy.</small>
+          </label>
+          <label class="editor-field">
+            <span>Mes</span>
+            <input [(ngModel)]="model.mes" readonly class="editor-readonly" placeholder="Se obtiene de la emisión"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorMonthValid" />
+            <small class="editor-field-hint">Se calcula automáticamente.</small>
+          </label>
+        </div>
+
         @if (forma === 'A') {
-        <div class="editor-section-title">1 · Vehículo y conductor</div>
-        <div class="editor-grid editor-grid--two">
+        <div class="editor-section-title">{{ editorModo === 'crear' ? 3 : 2 }} · Vehículo y conductor</div>
+        <div class="editor-grid editor-grid--pair">
           <label class="editor-field">
             <span>Placa *</span>
             <select [(ngModel)]="model.placa" class="mono">
@@ -281,9 +342,6 @@
               }
             </select>
           </label>
-        </div>
-
-        <div class="editor-grid editor-grid--document">
           <label class="editor-field">
             <span>Tipo de documento *</span>
             <select [(ngModel)]="model.tipoDocumento" (ngModelChange)="onEditorTipoDocumentoChange()">
@@ -293,55 +351,62 @@
           </label>
           <label class="editor-field">
             <span>Número de documento *</span>
-            <input [(ngModel)]="model.numeroDocumento" (input)="onEditorNumeroDocumentoInput($event)" [attr.inputmode]="editorDocumentoInputMode" [attr.maxlength]="editorDocumentoMaxLength" [placeholder]="model.tipoDocumento === 'DNI' ? '12345678' : 'ABC123456'" class="mono uppercase" [class.editor-field--invalid]="editorSubmitted && !isEditorDocumentoValid" />
-            <small [class.editor-field-error]="editorSubmitted && !isEditorDocumentoValid" [class.editor-field-hint]="!editorSubmitted || isEditorDocumentoValid">{{ editorDocumentoHint }}</small>
+            <input [(ngModel)]="model.numeroDocumento" (input)="onEditorNumeroDocumentoInput($event)"
+              [attr.inputmode]="editorDocumentoInputMode" [attr.maxlength]="editorDocumentoMaxLength"
+              [placeholder]="model.tipoDocumento === 'DNI' ? '12345678' : 'ABC123456'" class="mono uppercase"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorDocumentoValid" />
+            <small [class.editor-field-error]="editorSubmitted && !isEditorDocumentoValid"
+              [class.editor-field-hint]="!editorSubmitted || isEditorDocumentoValid">{{ editorDocumentoHint }}</small>
           </label>
           <label class="editor-field">
             <span>Licencia de conducir *</span>
-            <input [(ngModel)]="model.licencia" (input)="onEditorLicenseInput($event)" maxlength="9" autocomplete="off" class="mono uppercase" placeholder="Q00000000" [class.editor-field--invalid]="editorSubmitted && !isEditorLicenseValid" />
-            <small [class.editor-field-error]="editorSubmitted && !isEditorLicenseValid" [class.editor-field-hint]="!editorSubmitted || isEditorLicenseValid">Una letra seguida de 8 dígitos.</small>
+            <input [(ngModel)]="model.licencia" (input)="onEditorLicenseInput($event)" maxlength="9"
+              autocomplete="off" class="mono uppercase" placeholder="Q00000000"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorLicenseValid" />
+            <small [class.editor-field-error]="editorSubmitted && !isEditorLicenseValid"
+              [class.editor-field-hint]="!editorSubmitted || isEditorLicenseValid">Una letra seguida de 8 dígitos.</small>
           </label>
         </div>
+        }
 
-        <div class="editor-section-title">2 · Factura</div>
-        <div class="editor-grid editor-grid--invoice">
-          <label class="editor-field">
-            <span>Serie *</span>
-            <input [(ngModel)]="model.serie" (input)="onEditorInvoiceSeriesInput($event)" maxlength="4" autocomplete="off" class="mono uppercase" placeholder="F001" [class.editor-field--invalid]="editorSubmitted && !isEditorInvoiceSeriesValid" />
-            <small [class.editor-field-error]="editorSubmitted && !isEditorInvoiceSeriesValid" [class.editor-field-hint]="!editorSubmitted || isEditorInvoiceSeriesValid">Formato obligatorio: F001.</small>
-          </label>
-          <label class="editor-field">
-            <span>Número *</span>
-            <input [(ngModel)]="model.numero" (input)="onEditorInvoiceNumberInput($event)" inputmode="numeric" maxlength="8" autocomplete="off" class="mono" placeholder="0001234" [class.editor-field--invalid]="editorSubmitted && !isEditorInvoiceNumberValid" />
-            <small [class.editor-field-error]="editorSubmitted && !isEditorInvoiceNumberValid" [class.editor-field-hint]="!editorSubmitted || isEditorInvoiceNumberValid">Entre 1 y 8 dígitos.</small>
-          </label>
-          <label class="editor-field">
-            <span>Emisión *</span>
-            <input [(ngModel)]="model.emision" (ngModelChange)="onEditorEmissionChange()" type="date" [max]="todayDate" class="mono" [class.editor-field--invalid]="editorSubmitted && !isEditorEmissionValid" />
-            <small [class.editor-field-error]="editorSubmitted && !isEditorEmissionValid" [class.editor-field-hint]="!editorSubmitted || isEditorEmissionValid">No puede ser posterior a hoy.</small>
-          </label>
-          <label class="editor-field">
-            <span>Mes</span>
-            <input [(ngModel)]="model.mes" readonly class="editor-readonly" placeholder="Se obtiene de la emisión" [class.editor-field--invalid]="editorSubmitted && !isEditorMonthValid" />
-            <small class="editor-field-hint">Se calcula automáticamente.</small>
-          </label>
+        <div class="editor-section-title">
+          {{ editorModo === 'crear' ? (forma === 'A' ? 4 : 3) : (forma === 'A' ? 3 : 2) }} · Grifo o distribuidor
         </div>
-
-        <div class="editor-section-title">3 · Grifo o Distribuidor</div>
-        <div class="editor-grid editor-grid--station">
+        <div class="editor-grid editor-grid--pair">
           <label class="editor-field">
             <span>RUC del grifo *</span>
-            <input [(ngModel)]="model.rucGrifo" (input)="onEditorStationRucInput($event)" inputmode="numeric" maxlength="11" autocomplete="off" class="mono" placeholder="20512345678" [class.editor-field--invalid]="editorSubmitted && !isEditorStationRucValid" />
-            <small [class.editor-field-error]="editorSubmitted && !isEditorStationRucValid" [class.editor-field-hint]="!editorSubmitted || isEditorStationRucValid">11 dígitos; inicia con 10, 15, 17 o 20.</small>
+            <input [(ngModel)]="model.rucGrifo" (input)="onEditorStationRucInput($event)" inputmode="numeric"
+              maxlength="11" autocomplete="off" class="mono" placeholder="20512345678"
+              [class.editor-field--invalid]="editorSubmitted && !isEditorStationRucValid" />
+            <small [class.editor-field-error]="editorSubmitted && !isEditorStationRucValid"
+              [class.editor-field-hint]="!editorSubmitted || isEditorStationRucValid">11 dígitos; inicia con 10, 15, 17 o 20.</small>
           </label>
           <label class="editor-field">
             <span>Razón social</span>
             <input [(ngModel)]="model.razonSocial" placeholder="Opcional" />
           </label>
+          <label class="editor-field">
+            <span>Dirección</span>
+            <input [(ngModel)]="model.direccion" placeholder="Av. Principal 123" />
+          </label>
+          <label class="editor-field">
+            <span>Departamento</span>
+            <input [(ngModel)]="model.departamento" placeholder="Lima" />
+          </label>
+          <label class="editor-field">
+            <span>Provincia</span>
+            <input [(ngModel)]="model.provincia" placeholder="Lima" />
+          </label>
+          <label class="editor-field">
+            <span>Distrito</span>
+            <input [(ngModel)]="model.distrito" placeholder="Ate" />
+          </label>
         </div>
 
-        <div class="editor-section-title">4 · Combustible</div>
-        <div class="editor-grid editor-grid--fuel">
+        <div class="editor-section-title">
+          {{ editorModo === 'crear' ? (forma === 'A' ? 5 : 4) : (forma === 'A' ? 4 : 3) }} · Combustible
+        </div>
+        <div class="editor-grid editor-grid--pair">
           <label class="editor-field">
             <span>Tipo</span>
             <select [(ngModel)]="model.combustible">
@@ -358,11 +423,8 @@
             <span>Galones *</span>
             <input [(ngModel)]="model.galones" type="number" min="0.01" step="0.01" class="mono" placeholder="0.00" />
           </label>
-        </div>
-
-        <div class="editor-grid editor-grid--fuel mt-3">
           <label class="editor-field">
-            <span>Costo Total (S/)</span>
+            <span>Costo total (S/)</span>
             <input [(ngModel)]="model.costo" type="number" min="0.01" step="0.01" class="mono" placeholder="0.00" />
           </label>
         </div>
@@ -376,29 +438,6 @@
         <button type="button" class="editor-cancel" (click)="cerrarEditor()">Cancelar</button>
         <button type="button" class="editor-save" (click)="guardarEditor()">
           {{ editorModo === 'crear' ? 'Validar y registrar' : 'Guardar cambios' }}
-        </button>
-      </footer>
-    </section>
-  </div>
-}
-
-@if (comprobantePendienteEliminar; as comprobante) {
-  <div class="atu-modal-overlay z-[110]" role="presentation" (click)="cerrarConfirmacionEliminar()">
-    <section class="delete-confirmation" role="alertdialog" aria-modal="true" aria-labelledby="delete-receipt-title" (click)="$event.stopPropagation()">
-      <div class="delete-confirmation__body">
-        <div class="delete-confirmation__icon"><i class="fa-solid fa-trash-can"></i></div>
-        <h2 id="delete-receipt-title">Eliminar comprobante</h2>
-        <p>
-          ¿Estás seguro de que deseas eliminar el comprobante
-          <strong class="mono">{{ comprobante.numero }}</strong> correspondiente al vehículo
-          <strong class="mono">{{ comprobante.placa }}</strong>?
-          Esta acción no se puede deshacer.
-        </p>
-      </div>
-      <footer class="delete-confirmation__footer">
-        <button type="button" class="editor-cancel" (click)="cerrarConfirmacionEliminar()">Cancelar</button>
-        <button type="button" class="delete-confirmation__submit" (click)="confirmarEliminarComprobante()">
-          <i class="fa-solid fa-trash-can"></i> Eliminar
         </button>
       </footer>
     </section>

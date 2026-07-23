@@ -49,10 +49,11 @@ export class ComprobantesComponent implements OnInit {
   editorModo: 'crear' | 'editar' = 'editar';
   editorError = '';
   editorSubmitted = false;
-  comprobantePendienteEliminar: Comprobante | null = null;
   readonly todayDate = this.formatLocalDate(new Date());
   editor: any = null;
   archivoSeleccionado: File | null = null;
+  archivoError = '';
+  isFileDragging = false;
 
   // Dummy arrays para Forma B (UI original los usaba)
   acumulados: any[] = [];
@@ -162,76 +163,53 @@ export class ComprobantesComponent implements OnInit {
     return this.totalGalonesMayorista * this.factorProrrateo;
   }
 
-  get comprobantesFiltrados(): Comprobante[] {
-    const termino = this.busqueda.trim().toLocaleLowerCase('es');
-
-    return this.comprobantes.filter(comprobante => {
-      const coincideEstado = this.estadoFiltro === 'todos' || comprobante.estado === this.estadoFiltro;
-      const contenido = [
-        comprobante.numero,
-        comprobante.placa,
-        comprobante.conductor,
-        comprobante.grifo,
-        comprobante.ubicacion,
-        comprobante.combustible,
-      ].join(' ').toLocaleLowerCase('es');
-
-      return coincideEstado && (!termino || contenido.includes(termino));
-    });
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.validarArchivo(file);
+    input.value = '';
   }
 
-  porcentaje(item: AcumuladoVehiculo): number {
-    return Math.min((item.consumido / item.tope) * 100, 100);
+  onFileDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isFileDragging = true;
   }
 
-  abrirConfirmacionEliminar(comprobante: Comprobante): void {
-    this.comprobantePendienteEliminar = comprobante;
+  onFileDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isFileDragging = false;
   }
 
-  cerrarConfirmacionEliminar(): void {
-    this.comprobantePendienteEliminar = null;
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isFileDragging = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.validarArchivo(file);
   }
 
-  confirmarEliminarComprobante(): void {
-    if (!this.comprobantePendienteEliminar) return;
-    const id = this.comprobantePendienteEliminar.id;
-    this.comprobantes = this.comprobantes.filter(comprobante => comprobante.id !== id);
-    this.comprobantePendienteEliminar = null;
+  quitarArchivo(): void {
+    this.archivoSeleccionado = null;
+    this.archivoError = '';
   }
 
-  abrirEditor(comprobante: Comprobante): void {
-    const [serie, ...numeroPartes] = comprobante.numero.split('-');
-    const distrito = comprobante.ubicacion.split(',')[0]?.trim() || '';
+  private validarArchivo(file: File): void {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    const maxSize = 5 * 1024 * 1024;
 
-    this.editorModo = 'editar';
-    this.editor = {
-      id: comprobante.id,
-      placa: comprobante.placa,
-      conductor: comprobante.conductor,
-      tipoDocumento: comprobante.tipoDocumento || 'DNI',
-      numeroDocumento: comprobante.numeroDocumento || (comprobante.placa === 'B2W-458' ? '45879621' : '41258963'),
-      licencia: comprobante.licencia || (comprobante.placa === 'B2W-458' ? 'Q45879621' : 'Q41258963'),
-      serie,
-      numero: numeroPartes.join('-'),
-      emision: this.fechaParaInput(comprobante.fecha),
-      mes: this.mesDesdeFecha(comprobante.fecha),
-      rucGrifo: comprobante.rucGrifo || (comprobante.grifo === 'Grifo El Sol S.A.C.' ? '20598765432' : '20487654321'),
-      razonSocial: comprobante.grifo,
-      direccion: comprobante.direccion || (distrito === 'Ate' ? 'Av. Nicolás Ayllón 2840' : 'Av. Separadora Industrial 1450'),
-      departamento: comprobante.departamento || 'Lima',
-      provincia: comprobante.provincia || 'Lima',
-      distrito: comprobante.distrito || distrito,
-      combustible: comprobante.combustible,
-      ppm: comprobante.ppm,
-      galones: comprobante.galones,
-    };
-    this.editorError = '';
-    this.editorSubmitted = false;
-  }
-  onFileSelected(event: any) {
-    if (event.target.files && event.target.files.length > 0) {
-      this.archivoSeleccionado = event.target.files[0];
+    if (!allowedTypes.includes(file.type)) {
+      this.archivoSeleccionado = null;
+      this.archivoError = 'Selecciona un archivo PDF o una imagen JPG/PNG.';
+      return;
     }
+
+    if (file.size > maxSize) {
+      this.archivoSeleccionado = null;
+      this.archivoError = 'El comprobante no puede superar los 5 MB.';
+      return;
+    }
+
+    this.archivoSeleccionado = file;
+    this.archivoError = '';
   }
 
   // --- Editor ---
@@ -239,6 +217,7 @@ export class ComprobantesComponent implements OnInit {
   abrirRegistro(): void {
     this.editorModo = 'crear';
     this.archivoSeleccionado = null;
+    this.archivoError = '';
     this.editor = {
       uuid: '',
       placa: '',
@@ -273,49 +252,7 @@ export class ComprobantesComponent implements OnInit {
           const c = res.data.lista;
           this.editorModo = 'editar';
           this.archivoSeleccionado = null;
-
-          let p = '';
-          if (c.tipoComprobanteCodigo === 'FORMA_A') {
-             p = c.placa || (c.detalle && c.detalle.length > 0 ? c.detalle[0].placa : '');
-          }
-
-          this.editor = {
-            uuid: c.comprobanteUuid,
-            placa: p,
-            conductor: '', // No viene en el DTO
-            tipoDocumento: 'DNI',
-            numeroDocumento: '',
-            licencia: '',
-            serie: c.serie,
-            numero: c.numero,
-            emision: c.fechaEmision,
-            mes: c.mes,
-            anio: c.anio,
-            rucGrifo: c.rucDistribuidor,
-            razonSocial: c.razonSocialDistribuidor,
-            direccion: '',
-            departamento: '',
-            provincia: '',
-            distrito: c.distritoDistribuidor,
-            combustible: c.tipoCombustibleCodigo,
-            ppm: c.azufrePpm,
-            costo: 0, // Ajustar segun DTO si viene
-            galones: c.galones,
-          };
-          this.editorError = '';
-        }
-      },
-      error: () => Swal.fire('Error', 'No se pudo cargar el detalle del comprobante.', 'error')
-    });
-  }
-
-  abrirEditor(item: ComprobanteListResponse): void {
-    this.apiComprobante.obtenerComprobante(item.comprobanteUuid).subscribe({
-      next: (res) => {
-        if (res.data?.lista) {
-          const c = res.data.lista;
-          this.editorModo = 'editar';
-          this.archivoSeleccionado = null;
+          this.archivoError = '';
 
           let p = '';
           if (c.tipoComprobanteCodigo === 'FORMA_A') {
@@ -356,6 +293,8 @@ export class ComprobantesComponent implements OnInit {
     this.editor = null;
     this.editorError = '';
     this.editorSubmitted = false;
+    this.archivoSeleccionado = null;
+    this.archivoError = '';
   }
 
   get editorDocumentoMaxLength(): number {
@@ -465,7 +404,6 @@ export class ComprobantesComponent implements OnInit {
     const value = input.value.replace(/\D/g, '').slice(0, 11);
     input.value = value;
     this.editor.rucGrifo = value;
-    this.archivoSeleccionado = null;
   }
 
   guardarEditor(): void {
@@ -473,19 +411,26 @@ export class ComprobantesComponent implements OnInit {
     this.editorSubmitted = true;
 
     const modelo = this.editor;
-    if (!modelo.placa || !modelo.galones || modelo.galones <= 0) {
-      this.editorError = 'Completa la placa y una cantidad válida de galones.';
+    if (this.forma === 'A' && !modelo.placa) {
+      this.editorError = 'Selecciona la placa del vehículo.';
       return;
     }
 
-    if (!this.isEditorDocumentoValid) {
-      this.editorError = this.editorDocumentoHint;
+    if (!modelo.galones || modelo.galones <= 0) {
+      this.editorError = 'Ingresa una cantidad válida de galones.';
       return;
     }
 
-    if (!this.isEditorLicenseValid) {
-      this.editorError = 'La licencia debe contener una letra seguida de 8 dígitos.';
-      return;
+    if (this.forma === 'A') {
+      if (!this.isEditorDocumentoValid) {
+        this.editorError = this.editorDocumentoHint;
+        return;
+      }
+
+      if (!this.isEditorLicenseValid) {
+        this.editorError = 'La licencia debe contener una letra seguida de 8 dígitos.';
+        return;
+      }
     }
 
     if (!this.isEditorInvoiceSeriesValid) {
@@ -510,34 +455,11 @@ export class ComprobantesComponent implements OnInit {
 
     if (!this.isEditorStationRucValid) {
       this.editorError = 'El RUC del grifo debe tener 11 dígitos y un prefijo válido.';
-    if (!modelo.serie || !modelo.numero || !modelo.galones || modelo.galones <= 0) {
-      this.editorError = 'Completa la serie, el número y una cantidad válida de galones.';
       return;
     }
 
-    const datosComprobante = {
-      numero: `${modelo.serie.trim() || 'F001'}-${modelo.numero.trim()}`,
-      fecha: this.fechaParaMostrar(modelo.emision),
-      placa: modelo.placa,
-      conductor: modelo.conductor.trim(),
-      grifo: modelo.razonSocial.trim() || 'Estación pendiente de validación',
-      ubicacion: [modelo.distrito, modelo.departamento].filter(Boolean).join(', ') || 'Ubicación pendiente',
-      combustible: modelo.combustible,
-      ppm: Number(modelo.ppm),
-      galones: Number(modelo.galones),
-      tipoDocumento: modelo.tipoDocumento,
-      numeroDocumento: modelo.numeroDocumento.trim(),
-      licencia: modelo.licencia.trim(),
-      mes: modelo.mes,
-      rucGrifo: modelo.rucGrifo.trim(),
-      direccion: modelo.direccion.trim(),
-      departamento: modelo.departamento,
-      provincia: modelo.provincia,
-      distrito: modelo.distrito,
-    };
-
     if (this.editorModo === 'crear') {
-      if (this.forma === 'A' && !this.archivoSeleccionado) {
+      if (!this.archivoSeleccionado) {
         this.editorError = 'Debes adjuntar el archivo del comprobante.';
         return;
       }
@@ -642,9 +564,7 @@ export class ComprobantesComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   cerrarConEscape(): void {
-    if (this.comprobantePendienteEliminar) {
-      this.cerrarConfirmacionEliminar();
-    } else if (this.editor) {
+    if (this.editor) {
       this.cerrarEditor();
     }
   }

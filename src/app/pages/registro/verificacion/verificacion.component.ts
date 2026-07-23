@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, Observable } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ApiVerificacionService } from '@core/services/api-verificacion.service';
@@ -48,16 +48,6 @@ export class VerificacionComponent implements OnInit {
   private readonly apiVerificacion = inject(ApiVerificacionService);
   private readonly apiAuth = inject(ApiAuthService);
   private readonly auth = inject(AuthService);
-
-  steps: StepItem[] = [
-    {
-      label: 'Verificación',
-      subtitle: 'Paso 1',
-      icon: 'fa-solid fa-shield-check',
-    },
-    { label: 'Vehículos', subtitle: 'Paso 2', icon: 'fa-solid fa-truck' },
-  ];
-  activeIndex = 0;
 
   // ── Datos del transportista ─────────────────────────────────
   datosTransportista: DatoTransportista[] = [];
@@ -113,9 +103,7 @@ export class VerificacionComponent implements OnInit {
       .pipe(finalize(() => (this.cargandoDatos = false)))
       .subscribe({
         next: ({ datos, autorizaciones, semaforo }) => {
-          {
-        this.aplicarDatosTransportista(datos);
-      };
+          this.aplicarDatosTransportista(datos);
           this.aplicarAutorizaciones(autorizaciones);
           this.aplicarSemaforo(semaforo);
         },
@@ -139,11 +127,26 @@ export class VerificacionComponent implements OnInit {
 
     this.cargandoDatos = true;
     this.errorDatos = '';
-    this.apiVerificacion.obtenerDatosTransportista(this.rucConsulta).pipe(
+
+    const consulta: Observable<
+      DatosTransportista | AutorizacionTransportista[] | SemaforoCondicion[]
+    > = seccion === 'datos'
+      ? this.apiVerificacion.obtenerDatosTransportista(this.rucConsulta)
+      : seccion === 'autorizaciones'
+        ? this.apiVerificacion.obtenerAutorizaciones(this.rucConsulta)
+        : this.apiVerificacion.obtenerSemaforo(this.rucConsulta);
+
+    consulta.pipe(
       finalize(() => this.cargandoDatos = false),
     ).subscribe({
-      next: datos => {
-        this.aplicarDatosTransportista(datos);
+      next: resultado => {
+        if (seccion === 'datos') {
+          this.aplicarDatosTransportista(resultado as DatosTransportista);
+        } else if (seccion === 'autorizaciones') {
+          this.aplicarAutorizaciones(resultado as AutorizacionTransportista[]);
+        } else {
+          this.aplicarSemaforo(resultado as SemaforoCondicion[]);
+        }
         this.descontarActualizacion(seccion);
       },
       error: (error: VerificacionServiceError) => {
