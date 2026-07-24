@@ -130,6 +130,25 @@ export class ComprobantesComponent implements OnInit {
   acumulados: any[] = [];
   vehiculosAbastecidos: any[] = [];
 
+  busquedaAcumulado = '';
+  busquedaVehiculoAbastecido = '';
+
+  get acumuladosFiltrados(): any[] {
+    const term = (this.busquedaAcumulado || '').trim().toLowerCase();
+    if (!term) return this.acumulados;
+    return this.acumulados.filter(item =>
+      (item.placa || '').toLowerCase().includes(term)
+    );
+  }
+
+  get vehiculosAbastecidosFiltrados(): any[] {
+    const term = (this.busquedaVehiculoAbastecido || '').trim().toLowerCase();
+    if (!term) return this.vehiculosAbastecidos;
+    return this.vehiculosAbastecidos.filter(item =>
+      (item.placa || '').toLowerCase().includes(term)
+    );
+  }
+
   ngOnInit() {
     const user = this.apiAuth.getUserFromSession();
     if (user && user.numDocumento) {
@@ -157,12 +176,32 @@ export class ComprobantesComponent implements OnInit {
       .subscribe((res) => {
         if (res.data?.lista) {
           this.vehiculos = res.data.lista;
-          this.calcularAcumuladosYAbastecidos();
+          this.calcularVehiculosAbastecidos();
         }
       });
     this.apiComprobante.listarDistribuidores().subscribe((res) => {
       if (res.data?.lista) this.distribuidores = res.data.lista;
     });
+    this.apiComprobante
+      .listarAcumuladoVehiculos(this.rucTransportista)
+      .subscribe({
+        next: (res) => {
+          const raw = res.data?.lista || res.data || [];
+          const list = Array.isArray(raw) ? raw : [];
+          if (list.length > 0) {
+            this.acumulados = list.map((item: any) => ({
+              placa: item.placa || '',
+              consumido: Number(item.galonesAcumulados ?? item.consumido ?? 0),
+              tope: Number(item.topeGalones ?? item.tope ?? 0),
+            }));
+          } else {
+            this.calcularAcumuladosFallback();
+          }
+        },
+        error: () => {
+          this.calcularAcumuladosFallback();
+        },
+      });
   }
 
   listarComprobantes() {
@@ -217,15 +256,21 @@ export class ComprobantesComponent implements OnInit {
   }
 
   // --- Helpers UI Form B ---
-  calcularAcumuladosYAbastecidos() {
+  calcularVehiculosAbastecidos() {
+    this.vehiculosAbastecidos = this.vehiculos.map((v) => ({
+      placa: v.placa,
+      subsidiable: v.esSubsidiable,
+    }));
+    if (this.acumulados.length === 0) {
+      this.calcularAcumuladosFallback();
+    }
+  }
+
+  private calcularAcumuladosFallback() {
     this.acumulados = this.vehiculos.map((v) => ({
       placa: v.placa,
       consumido: 0,
       tope: v.topeGalones,
-    }));
-    this.vehiculosAbastecidos = this.vehiculos.map((v) => ({
-      placa: v.placa,
-      subsidiable: v.esSubsidiable,
     }));
   }
 
@@ -347,10 +392,21 @@ export class ComprobantesComponent implements OnInit {
   confirmarEliminarComprobante(): void {
     if (!this.comprobantePendienteEliminar) return;
     const uuid = this.comprobantePendienteEliminar.comprobanteUuid;
-    this.comprobantes = this.comprobantes.filter(
-      (comprobante) => comprobante.comprobanteUuid !== uuid,
-    );
-    this.comprobantePendienteEliminar = null;
+    this.apiComprobante.eliminarComprobante(uuid).subscribe({
+      next: () => {
+        Swal.fire('Eliminado', 'El comprobante ha sido eliminado.', 'success');
+        this.comprobantePendienteEliminar = null;
+        this.listarComprobantes();
+      },
+      error: (err) => {
+        Swal.fire(
+          'Error',
+          err?.error?.data?.lista?.message || 'Error al eliminar el comprobante.',
+          'error',
+        );
+        this.comprobantePendienteEliminar = null;
+      },
+    });
   }
 
   abrirEditor(item: ComprobanteListResponse): void {
